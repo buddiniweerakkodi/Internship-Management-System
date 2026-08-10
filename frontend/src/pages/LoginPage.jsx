@@ -1,109 +1,118 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { GraduationCap, Eye, EyeOff, ArrowLeft } from 'lucide-react';
+import { GraduationCap, ArrowLeft, Mail, Lock, Users, UserCheck } from 'lucide-react';
 
 const LoginPage = () => {
-  const [showPassword, setShowPassword] = useState(false);
+  const [role, setRole] = useState('intern');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    // Temporary logic to demonstrate routing before Backend integration
-    if (email.includes('admin')) {
-      navigate('/admin/dashboard');
-    } else {
-      navigate('/intern/dashboard');
+    setError(''); 
+
+    try {
+      const response = await fetch('http://localhost:8080/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, role }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        setError(errorText); 
+        return;
+      }
+
+      const data = await response.json();
+      
+      // Token එක සහ User Data Save කිරීම (Role එක අනිවාර්යයෙන් Capital කර Save කරමු)
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('role', data.role.toUpperCase());
+      localStorage.setItem('email', data.email);
+
+      // Role එක අනුව Redirect කිරීම (Frontend එකේදීත් Capital අකුරු වලින් Check කිරීම)
+      if (data.role.toUpperCase() === 'SUPERVISOR') {
+        navigate('/admin-dashboard');
+      } else {
+        navigate('/intern-dashboard');
+      }
+
+    } catch (err) {
+      setError('An error occurred. Please try again.');
     }
   };
 
   return (
-    <div className="min-h-screen bg-blue-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative">
-      
-      {/* Top Header */}
-      <div className="absolute top-0 left-0 w-full p-6 flex justify-between items-center">
-        <div className="flex items-center gap-2 text-2xl font-bold text-blue-700">
-          <GraduationCap size={32} />
-          InternTrack
-        </div>
-        <Link to="/" className="flex items-center gap-2 text-blue-600 font-medium hover:text-blue-800">
-          <ArrowLeft size={20} /> Back to Home
-        </Link>
-      </div>
+    <div className="min-h-screen bg-[#f8faff] flex flex-col justify-center items-center p-4">
+      <Link to="/" className="absolute top-6 left-6 flex items-center gap-2 text-sm font-semibold text-gray-600 hover:text-blue-600 transition">
+        <ArrowLeft size={16} /> Back to Home
+      </Link>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-4xl">
-        <div className="bg-white py-8 px-4 shadow-2xl sm:rounded-2xl sm:px-10 flex flex-col md:flex-row overflow-hidden border border-gray-100">
-          
-          {/* Left Side - Welcome Banner */}
-          <div className="md:w-1/2 bg-indigo-50 p-8 rounded-xl flex flex-col justify-center">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Welcome Back!</h2>
-            <p className="text-gray-600 mb-8">
-              Manage your internships, assign tasks, and track daily progress seamlessly.
-            </p>
-            <div className="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-lg text-sm font-medium text-blue-700 shadow-sm w-max">
-              <Users size={16} /> Single portal for both Supervisors & Interns
+      <div className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100 w-full max-w-md">
+        <div className="flex justify-center mb-4">
+          <div className="bg-blue-600 text-white p-2.5 rounded-xl shadow-md">
+            <GraduationCap size={28} />
+          </div>
+        </div>
+
+        <h2 className="text-2xl font-bold text-center text-gray-900 mb-1">Welcome Back</h2>
+        <p className="text-xs text-center text-gray-500 mb-6">Log in to your InternTrack account</p>
+
+        {/* Role Switcher */}
+        <div className="flex bg-gray-100 p-1 rounded-xl mb-6">
+          <button 
+            type="button" onClick={() => { setRole('intern'); setError(''); }}
+            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-semibold transition ${role === 'intern' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-800'}`}
+          >
+            <Users size={14} /> Intern Login
+          </button>
+          <button 
+            type="button" onClick={() => { setRole('supervisor'); setError(''); }}
+            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-semibold transition ${role === 'supervisor' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-800'}`}
+          >
+            <UserCheck size={14} /> Supervisor
+          </button>
+        </div>
+
+        {/* Error Message */}
+        {error && (
+          <div className="bg-red-50 text-red-600 text-xs font-semibold p-3 rounded-lg mb-4 border border-red-100 text-center">
+            {error}
+          </div>
+        )}
+
+        <form className="space-y-4" onSubmit={handleLogin}>
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">Email Address</label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+              <input 
+                type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
+                placeholder="name@example.com"
+                className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-blue-600 transition"
+              />
             </div>
           </div>
 
-          {/* Right Side - Login Form */}
-          <div className="md:w-1/2 p-8 pt-10 md:pt-8">
-            <h2 className="text-2xl font-bold text-gray-900 text-center mb-2">Login to Your Account</h2>
-            <p className="text-sm text-gray-500 text-center mb-8">Please enter your email and password to continue.</p>
-            
-            <form onSubmit={handleLogin} className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-                <input 
-                  type="email" 
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="appearance-none block w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder="alex@interntrack.com"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                <div className="relative">
-                  <input 
-                    type={showPassword ? "text" : "password"} 
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="appearance-none block w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    placeholder="••••••••"
-                  />
-                  <button 
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
-                  >
-                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <input id="remember-me" type="checkbox" className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" />
-                  <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">Remember Me</label>
-                </div>
-                <div className="text-sm">
-                  <a href="#" className="font-medium text-blue-600 hover:text-blue-500">Forgot Password?</a>
-                </div>
-              </div>
-
-              <div>
-                <button type="submit" className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition">
-                  Sign In →
-                </button>
-              </div>
-            </form>
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">Password</label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+              <input 
+                type="password" required value={password} onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-blue-600 transition"
+              />
+            </div>
           </div>
 
-        </div>
+          <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl font-semibold text-sm transition shadow-md shadow-blue-200 mt-2">
+            Log In as {role === 'intern' ? 'Intern' : 'Supervisor'}
+          </button>
+        </form>
       </div>
     </div>
   );

@@ -1,66 +1,296 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, Users, BarChart3, GraduationCap } from 'lucide-react';
+import dashboardImg from '../assets/dashboard-preview.png';
+import { 
+  GraduationCap, 
+  ShieldCheck, 
+  Users, 
+  BarChart3, 
+  ArrowRight,
+  LayoutDashboard,
+  Folder,
+  ClipboardList,
+  UserCheck,
+  FileText,
+  Settings,
+  Bell,
+  CheckCircle2,
+  Clock,
+  Layout,
+  MessageSquare,
+  Search,
+  Rocket,
+  BarChart2,
+  CheckSquare
+} from 'lucide-react';
+
+// Brand & Custom SVGs (Avoids missing lucide export errors)
+const CodeIcon = ({ size = 16 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+);
+const FacebookIcon = ({ size = 16 }) => (
+  <svg width={size} height={size} fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+);
+const TwitterIcon = ({ size = 16 }) => (
+  <svg width={size} height={size} fill="currentColor" viewBox="0 0 24 24"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.936 9.936 0 0024 4.59z"/></svg>
+);
+const LinkedinIcon = ({ size = 16 }) => (
+  <svg width={size} height={size} fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+);
+const GithubIcon = ({ size = 16 }) => (
+  <svg width={size} height={size} fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+);
 
 const LandingPage = () => {
   return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Navigation Bar */}
-      <nav className="flex justify-between items-center p-6 bg-white shadow-sm">
-        <div className="flex items-center gap-2 text-2xl font-bold text-blue-700">
-          <GraduationCap size={32} />
-          InternTrack
+    <div className="min-h-screen bg-[#f8faff] font-sans text-gray-800 selection:bg-blue-200">
+      
+      {/* 1. Header / Navbar */}
+      <nav className="flex justify-between items-center px-8 py-4 bg-white/90 backdrop-blur-md sticky top-0 z-50 border-b border-gray-100 shadow-sm">
+        <div className="flex items-center gap-2.5 text-2xl font-bold text-blue-700">
+          <div className="bg-blue-600 text-white p-1.5 rounded-lg shadow-sm">
+            <GraduationCap size={22} />
+          </div>
+          <span className="tracking-tight text-blue-800">InternTrack</span>
         </div>
-        <div className="hidden md:flex gap-8 text-gray-600 font-medium">
-          <a href="#" className="hover:text-blue-600">Home</a>
-          <a href="#" className="hover:text-blue-600">Features</a>
-          <a href="#" className="hover:text-blue-600">About Us</a>
+        
+        <div className="hidden md:flex gap-10 text-sm font-semibold text-gray-600">
+          <a href="#home" className="text-blue-600 border-b-2 border-blue-600 pb-1">Home</a>
+          <a href="#features" className="hover:text-blue-600 transition">Features</a>
+          <a href="#about" className="hover:text-blue-600 transition">About Us</a>
         </div>
-        <Link to="/login" className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition">
-          Login
+
+        <Link 
+          to="/login" 
+          className="bg-blue-600 text-white px-5 py-2 rounded-lg font-medium hover:bg-blue-700 transition shadow-md shadow-blue-200 flex items-center gap-2 text-sm"
+        >
+          <ArrowRight size={16} /> Login
         </Link>
       </nav>
 
-      {/* Hero Section */}
-      <main className="max-w-7xl mx-auto px-6 py-16 flex flex-col md:flex-row items-center justify-between">
-        <div className="md:w-1/2 space-y-6">
-          <h1 className="text-5xl font-extrabold text-gray-900 leading-tight">
-            Streamline Your <br/>
-            <span className="text-blue-600">Internship Management &</span> <br/>
+      {/* 2. Hero Section */}
+      <section id="home" className="max-w-[1400px] mx-auto px-6 py-12 md:py-16 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative">
+        
+        {/* Hero Left Text */}
+        <div className="lg:col-span-5 space-y-6 z-10">
+          <h1 className="text-4xl md:text-5xl lg:text-[54px] font-extrabold text-[#0f172a] leading-[1.15] tracking-tight">
+            Streamline Your <br />
+            Internship Management & <br />
             <span className="text-blue-600">Task Tracking.</span>
           </h1>
-          <p className="text-lg text-gray-600">
+
+          <p className="text-base text-gray-600 max-w-md leading-relaxed">
             The all-in-one platform for supervisors and interns to collaborate, track progress, and achieve goals together.
           </p>
-          <div className="pt-4">
-            <Link to="/login" className="bg-blue-600 text-white px-8 py-3 rounded-lg text-lg font-medium hover:bg-blue-700 shadow-lg transition flex w-max items-center gap-2">
-              🚀 Get Started / Login
+
+          <div className="pt-2">
+            <Link 
+              to="/login" 
+              className="bg-blue-600 text-white px-7 py-3.5 rounded-xl text-base font-semibold hover:bg-blue-700 shadow-lg shadow-blue-600/30 transition flex items-center gap-2.5 w-max"
+            >
+              <Rocket size={18} /> Get Started / Login
             </Link>
           </div>
-          <div className="flex gap-6 pt-6 text-gray-500 font-medium">
-            <span className="flex items-center gap-2"><ShieldCheck className="text-blue-600"/> Secure</span>
-            <span className="flex items-center gap-2"><Users className="text-blue-600"/> Collaborative</span>
-            <span className="flex items-center gap-2"><BarChart3 className="text-blue-600"/> Insightful</span>
+
+          <div className="flex flex-wrap items-center gap-8 pt-4 text-sm font-semibold text-gray-600">
+            <span className="flex items-center gap-2"><ShieldCheck className="text-blue-600" size={18}/> Secure</span>
+            <span className="flex items-center gap-2"><Users className="text-blue-600" size={18}/> Collaborative</span>
+            <span className="flex items-center gap-2"><BarChart3 className="text-blue-600" size={18}/> Insightful</span>
           </div>
         </div>
+
+        {/* Hero Right Image */}
+        <div className="lg:col-span-7 relative z-10 w-full flex justify-center items-center">
+        {/* පසුපස තියෙන Soft Blue Glow Effect එක */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100%] h-[100%] bg-blue-100/60 rounded-full blur-3xl opacity-60 -z-10"></div>
         
-        {/* Mockup / Illustration Area */}
-        <div className="md:w-1/2 mt-12 md:mt-0 flex justify-center">
-          <div className="bg-white p-8 rounded-2xl shadow-xl border border-gray-100 w-full max-w-md text-center">
-            <h3 className="text-2xl font-bold text-gray-800 mb-4">Built for Both Roles</h3>
-            <div className="space-y-4">
-              <div className="p-4 bg-blue-50 rounded-xl border border-blue-100 text-left">
-                <h4 className="font-bold text-blue-800">Supervisor Portal</h4>
-                <p className="text-sm text-gray-600 mt-1">Manage interns, create projects, assign tasks, review submissions.</p>
+        <img 
+            src={dashboardImg} 
+            alt="InternTrack Dashboard Preview" 
+            className="rounded-2xl shadow-2xl border border-gray-200/80 w-full max-w-3xl object-cover hover:scale-[1.01] transition duration-300"
+        />
+        </div>
+    
+      </section>
+
+      {/* 3. Built for Both Roles Section */}
+      <section className="py-8 max-w-5xl mx-auto px-6">
+        <div className="flex items-center justify-center gap-4 mb-6">
+          <div className="h-px bg-gray-200 w-16"></div>
+          <span className="text-xs font-bold text-gray-700 tracking-wider">Built for Both Roles</span>
+          <div className="h-px bg-gray-200 w-16"></div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 justify-center">
+          {/* Supervisor Card */}
+          <div className="bg-white border border-blue-100 shadow-sm hover:shadow-md transition rounded-full p-3 px-6 flex items-center gap-4">
+            <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center text-blue-600 shrink-0 border border-blue-100">
+              <UserCheck size={24} />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-bold text-gray-900 text-sm">Supervisor Portal</h3>
+              <p className="text-[11px] text-gray-500 leading-tight mt-0.5">Manage interns, create projects, assign tasks, review submissions, and provide feedback.</p>
+            </div>
+            <button className="w-7 h-7 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-600 hover:text-white transition shrink-0">
+              <ArrowRight size={14} />
+            </button>
+          </div>
+
+          {/* Intern Card */}
+          <div className="bg-white border border-emerald-100 shadow-sm hover:shadow-md transition rounded-full p-3 px-6 flex items-center gap-4">
+            <div className="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-600 shrink-0 border border-emerald-100">
+              <GraduationCap size={24} />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-bold text-gray-900 text-sm">Intern Portal</h3>
+              <p className="text-[11px] text-gray-500 leading-tight mt-0.5">View assigned tasks, update progress, submit daily logs, and track growth.</p>
+            </div>
+            <button className="w-7 h-7 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center hover:bg-emerald-600 hover:text-white transition shrink-0">
+              <ArrowRight size={14} />
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* 4. Features Section */}
+      <section id="features" className="py-16 bg-white border-t border-gray-100">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-10">
+            <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full tracking-wider border border-blue-100">FEATURES</span>
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mt-3">Everything You Need to Manage Internships</h2>
+            <p className="text-gray-500 mt-1.5 text-xs max-w-xl mx-auto">Powerful features designed to simplify internship management and boost productivity.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            
+            {/* Feature 1 */}
+            <div className="bg-blue-50/40 border border-blue-100 rounded-2xl p-5 flex flex-col justify-between hover:shadow-md transition">
+              <div>
+                <div className="w-10 h-10 bg-blue-500 text-white rounded-xl flex items-center justify-center mb-4 shadow-sm">
+                  <Search size={20} />
+                </div>
+                <h3 className="font-bold text-gray-900 text-sm mb-2">Intern Tracking</h3>
+                <p className="text-xs text-gray-600 leading-relaxed">Manage intern profiles, track progress, skills, and overall performance in one place.</p>
               </div>
-              <div className="p-4 bg-green-50 rounded-xl border border-green-100 text-left">
-                <h4 className="font-bold text-green-800">Intern Portal</h4>
-                <p className="text-sm text-gray-600 mt-1">View assigned tasks, update progress, submit daily logs.</p>
+              <a href="#" className="text-xs font-bold text-blue-600 flex items-center gap-1 mt-6 hover:gap-2 transition-all">Learn more <ArrowRight size={12}/></a>
+            </div>
+
+            {/* Feature 2 */}
+            <div className="bg-emerald-50/40 border border-emerald-100 rounded-2xl p-5 flex flex-col justify-between hover:shadow-md transition">
+              <div>
+                <div className="w-10 h-10 bg-emerald-500 text-white rounded-xl flex items-center justify-center mb-4 shadow-sm">
+                  <Folder size={20} />
+                </div>
+                <h3 className="font-bold text-gray-900 text-sm mb-2">Project Allocation</h3>
+                <p className="text-xs text-gray-600 leading-relaxed">Create projects, assign interns, set deadlines, and monitor progress effortlessly.</p>
               </div>
+              <a href="#" className="text-xs font-bold text-emerald-600 flex items-center gap-1 mt-6 hover:gap-2 transition-all">Learn more <ArrowRight size={12}/></a>
+            </div>
+
+            {/* Feature 3 */}
+            <div className="bg-purple-50/40 border border-purple-100 rounded-2xl p-5 flex flex-col justify-between hover:shadow-md transition">
+              <div>
+                <div className="w-10 h-10 bg-purple-500 text-white rounded-xl flex items-center justify-center mb-4 shadow-sm">
+                  <Layout size={20} />
+                </div>
+                <h3 className="font-bold text-gray-900 text-sm mb-2">Kanban Task Board</h3>
+                <p className="text-xs text-gray-600 leading-relaxed">Organize tasks using an intuitive Kanban board, track progress across stages, and submit completion links easily.</p>
+              </div>
+              <a href="#" className="text-xs font-bold text-purple-600 flex items-center gap-1 mt-6 hover:gap-2 transition-all">Learn more <ArrowRight size={12}/></a>
+            </div>
+
+            {/* Feature 4 */}
+            <div className="bg-amber-50/40 border border-amber-100 rounded-2xl p-5 flex flex-col justify-between hover:shadow-md transition">
+              <div>
+                <div className="w-10 h-10 bg-amber-500 text-white rounded-xl flex items-center justify-center mb-4 shadow-sm">
+                  <ClipboardList size={20} />
+                </div>
+                <h3 className="font-bold text-gray-900 text-sm mb-2">Daily Logs & Submissions</h3>
+                <p className="text-xs text-gray-600 leading-relaxed">Submit daily work logs, share GitHub/Doc links, highlight blockers, and receive direct supervisor feedback.</p>
+              </div>
+              <a href="#" className="text-xs font-bold text-amber-600 flex items-center gap-1 mt-6 hover:gap-2 transition-all">Learn more <ArrowRight size={12}/></a>
+            </div>
+
+            {/* Feature 5 */}
+            <div className="bg-teal-50/40 border border-teal-100 rounded-2xl p-5 flex flex-col justify-between hover:shadow-md transition">
+              <div>
+                <div className="w-10 h-10 bg-teal-500 text-white rounded-xl flex items-center justify-center mb-4 shadow-sm">
+                  <MessageSquare size={20} />
+                </div>
+                <h3 className="font-bold text-gray-900 text-sm mb-2">Submission & Supervisor Feedback</h3>
+                <p className="text-xs text-gray-600 leading-relaxed">Supervisors can review submissions, request revisions, approve work, and add valuable feedback.</p>
+              </div>
+              <a href="#" className="text-xs font-bold text-teal-600 flex items-center gap-1 mt-6 hover:gap-2 transition-all">Learn more <ArrowRight size={12}/></a>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* 5. Footer */}
+      <footer className="bg-[#0b132b] text-white pt-12 pb-6 border-t border-slate-800">
+        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 border-b border-slate-800 pb-10 mb-6">
+          
+          <div className="lg:col-span-2 space-y-3">
+            <div className="flex items-center gap-2 text-xl font-bold">
+              <div className="bg-blue-600 text-white p-1 rounded-lg">
+                <GraduationCap size={20} />
+              </div>
+              InternTrack
+            </div>
+            <p className="text-xs text-slate-400 max-w-xs leading-relaxed">
+              Streamline internship management and task tracking with ease.
+            </p>
+          </div>
+
+          <div>
+            <h4 className="font-bold text-xs uppercase tracking-wider text-slate-300 mb-3">Product</h4>
+            <ul className="space-y-2 text-xs text-slate-400">
+              <li><a href="#features" className="hover:text-white transition">Features</a></li>
+              <li><a href="#" className="hover:text-white transition">Pricing</a></li>
+              <li><a href="#" className="hover:text-white transition">Roadmap</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="font-bold text-xs uppercase tracking-wider text-slate-300 mb-3">Company</h4>
+            <ul className="space-y-2 text-xs text-slate-400">
+              <li><a href="#about" className="hover:text-white transition">About Us</a></li>
+              <li><a href="#" className="hover:text-white transition">Contact</a></li>
+              <li><a href="#" className="hover:text-white transition">Blog</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="font-bold text-xs uppercase tracking-wider text-slate-300 mb-3">Resources</h4>
+            <ul className="space-y-2 text-xs text-slate-400 mb-4">
+              <li><a href="#" className="hover:text-white transition">Documentation</a></li>
+              <li><a href="#" className="hover:text-white transition">FAQ</a></li>
+              <li><a href="#" className="hover:text-white transition">Support</a></li>
+            </ul>
+
+            <h4 className="font-bold text-xs uppercase tracking-wider text-slate-300 mb-2">Stay Connected</h4>
+            <div className="flex gap-2.5">
+              <a href="#" className="w-7 h-7 rounded-full bg-slate-800 flex items-center justify-center text-slate-300 hover:bg-blue-600 hover:text-white transition"><FacebookIcon size={12}/></a>
+              <a href="#" className="w-7 h-7 rounded-full bg-slate-800 flex items-center justify-center text-slate-300 hover:bg-blue-400 hover:text-white transition"><TwitterIcon size={12}/></a>
+              <a href="#" className="w-7 h-7 rounded-full bg-slate-800 flex items-center justify-center text-slate-300 hover:bg-blue-700 hover:text-white transition"><LinkedinIcon size={12}/></a>
+              <a href="#" className="w-7 h-7 rounded-full bg-slate-800 flex items-center justify-center text-slate-300 hover:bg-slate-700 hover:text-white transition"><GithubIcon size={12}/></a>
             </div>
           </div>
         </div>
-      </main>
+
+        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center text-[11px] text-slate-500">
+          <p>© 2026 InternTrack. All rights reserved.</p>
+          <div className="flex gap-4 mt-3 md:mt-0">
+            <a href="#" className="hover:text-slate-300 transition">Privacy Policy</a>
+            <span>|</span>
+            <a href="#" className="hover:text-slate-300 transition">Terms of Service</a>
+            <span>|</span>
+            <a href="#" className="hover:text-slate-300 transition">Contact Us</a>
+          </div>
+        </div>
+      </footer>
+
     </div>
   );
 };
