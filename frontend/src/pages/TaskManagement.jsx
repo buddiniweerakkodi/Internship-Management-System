@@ -7,6 +7,8 @@ import {
   Clock, AlertCircle, ChevronRight, Filter
 } from 'lucide-react';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+
 const TaskManagement = () => {
   const navigate = useNavigate();
   
@@ -36,13 +38,35 @@ const TaskManagement = () => {
     assigneeId: ''
   });
 
+  // Dynamic Auth Headers Helper
   const getAuthHeaders = () => {
     const token = localStorage.getItem('token');
-    return token ? { Authorization: `Bearer ${token}` } : {};
+    return {
+      headers: {
+        Authorization: token && token !== 'undefined' && token !== 'null' ? `Bearer ${token}` : ''
+      }
+    };
+  };
+
+  // Error Handler 
+  const handleApiError = (err) => {
+    console.error("API Error Response:", err.response || err);
+    if (err.response && err.response.status === 401) {
+      console.warn("Unauthorized. Redirecting to login...");
+      localStorage.clear();
+      navigate('/login');
+    } else if (err.response && err.response.status === 403) {
+      console.error("Access Forbidden (403): Check Spring Security configurations or JWT token validity.");
+    }
   };
 
   // Initial Data Fetch
   useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token || token === 'undefined' || token === 'null') {
+      navigate('/login');
+      return;
+    }
     fetchTasks();
     fetchInterns();
     fetchProjects();
@@ -50,28 +74,36 @@ const TaskManagement = () => {
 
   const fetchTasks = async () => {
     try {
-      const res = await axios.get('http://localhost:8080/api/v1/tasks', { headers: getAuthHeaders() });
-      setTasks(res.data || []);
+      const res = await axios.get(`${API_BASE_URL}/api/v1/tasks`, getAuthHeaders());
+      
+      
+      const normalizedTasks = (res.data || []).map(task => ({
+        ...task,
+        dueDate: task.dueDate || task.deadline || '',
+        status: task.status ? task.status.trim() : 'TO_DO'
+      }));
+
+      setTasks(normalizedTasks);
     } catch (err) {
-      console.error("Failed to fetch tasks", err);
+      handleApiError(err);
     }
   };
 
   const fetchInterns = async () => {
     try {
-      const res = await axios.get('http://localhost:8080/api/v1/interns', { headers: getAuthHeaders() });
+      const res = await axios.get(`${API_BASE_URL}/api/v1/interns`, getAuthHeaders());
       setInterns(res.data || []);
     } catch (err) {
-      console.error("Failed to fetch interns", err);
+      console.warn("Could not fetch interns:", err.message);
     }
   };
 
   const fetchProjects = async () => {
     try {
-      const res = await axios.get('http://localhost:8080/api/v1/projects', { headers: getAuthHeaders() });
+      const res = await axios.get(`${API_BASE_URL}/api/v1/projects`, getAuthHeaders());
       setProjects(res.data || []);
     } catch (err) {
-      console.error("Failed to fetch projects", err);
+      console.warn("Could not fetch projects:", err.message);
     }
   };
 
@@ -85,8 +117,8 @@ const TaskManagement = () => {
         status: task.status || 'TO_DO',
         priority: task.priority || 'MEDIUM',
         dueDate: task.dueDate || task.deadline || '',
-        projectId: task.projectId || task.project?.id || '',
-        assigneeId: task.assigneeId || task.assignee?.id || ''
+        projectId: task.projectId || task.project?.id || task.project || '',
+        assigneeId: task.assigneeId || task.assignee?.id || task.assignee || ''
       });
     } else {
       setEditingTask(null);
@@ -96,8 +128,8 @@ const TaskManagement = () => {
         status: defaultStatus,
         priority: 'MEDIUM',
         dueDate: '',
-        projectId: projects[0]?.id || projects[0]?._id || '',
-        assigneeId: interns[0]?.id || interns[0]?._id || ''
+        projectId: projects[0]?.id || '',
+        assigneeId: interns[0]?.id || ''
       });
     }
     setIsModalOpen(true);
@@ -106,18 +138,23 @@ const TaskManagement = () => {
   // Submit Handler (Create or Edit)
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      const headers = getAuthHeaders();
-      const taskId = editingTask ? (editingTask.id || editingTask._id) : null;
+    
+   
+    const payload = {
+      ...formData,
+      deadline: formData.dueDate
+    };
 
+    try {
       if (editingTask) {
-        await axios.put(`http://localhost:8080/api/v1/tasks/${taskId}`, formData, { headers });
+        await axios.put(`${API_BASE_URL}/api/v1/tasks/${editingTask.id || editingTask._id}`, payload, getAuthHeaders());
       } else {
-        await axios.post('http://localhost:8080/api/v1/tasks', formData, { headers });
+        await axios.post(`${API_BASE_URL}/api/v1/tasks`, payload, getAuthHeaders());
       }
       setIsModalOpen(false);
       fetchTasks();
     } catch (err) {
+      handleApiError(err);
       alert(err.response?.data?.message || err.response?.data || "Task saving failed!");
     }
   };
@@ -125,17 +162,20 @@ const TaskManagement = () => {
   // Quick Status Update
   const handleStatusChange = async (taskId, newStatus) => {
     try {
-      const headers = getAuthHeaders();
-      await axios.patch(`http://localhost:8080/api/v1/tasks/${taskId}/status`, { status: newStatus }, { headers });
+      await axios.patch(`${API_BASE_URL}/api/v1/tasks/${taskId}/status`, { status: newStatus }, getAuthHeaders());
       fetchTasks();
     } catch (err) {
       try {
-        const headers = getAuthHeaders();
         const existingTask = tasks.find(t => (t.id || t._id) === taskId);
-        await axios.put(`http://localhost:8080/api/v1/tasks/${taskId}`, { ...existingTask, status: newStatus }, { headers });
+        const payload = {
+          ...existingTask,
+          status: newStatus,
+          deadline: existingTask?.dueDate || existingTask?.deadline
+        };
+        await axios.put(`${API_BASE_URL}/api/v1/tasks/${taskId}`, payload, getAuthHeaders());
         fetchTasks();
       } catch (error) {
-        console.error("Failed to update status", error);
+        handleApiError(error);
       }
     }
   };
@@ -144,10 +184,10 @@ const TaskManagement = () => {
   const handleDeleteTask = async (taskId) => {
     if (window.confirm("Are you sure you want to delete this task?")) {
       try {
-        await axios.delete(`http://localhost:8080/api/v1/tasks/${taskId}`, { headers: getAuthHeaders() });
+        await axios.delete(`${API_BASE_URL}/api/v1/tasks/${taskId}`, getAuthHeaders());
         fetchTasks();
       } catch (err) {
-        console.error("Failed to delete task", err);
+        handleApiError(err);
       }
     }
   };
@@ -157,15 +197,16 @@ const TaskManagement = () => {
     navigate('/login');
   };
 
-  // Filter Tasks
+  // Filter Tasks (Safe checkings included)
   const filteredTasks = tasks.filter(task => {
-    const matchesSearch = task.title?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          task.description?.toLowerCase().includes(searchTerm.toLowerCase());
+    const titleMatch = task.title ? task.title.toLowerCase().includes(searchTerm.toLowerCase()) : false;
+    const descMatch = task.description ? task.description.toLowerCase().includes(searchTerm.toLowerCase()) : false;
+    const matchesSearch = searchTerm === '' || titleMatch || descMatch;
     
-    const taskProjId = String(task.projectId || task.project?.id || task.project?._id || '');
+    const taskProjId = String(task.projectId || task.project?.id || task.project || '');
     const matchesProject = selectedProject === 'ALL' ? true : taskProjId === String(selectedProject);
     
-    const taskAssigneeId = String(task.assigneeId || task.assignee?.id || task.assignee?._id || '');
+    const taskAssigneeId = String(task.assigneeId || task.assignee?.id || task.assignee || '');
     const matchesAssignee = selectedAssignee === 'ALL' ? true : taskAssigneeId === String(selectedAssignee);
     
     const matchesPriority = selectedPriority === 'ALL' ? true : task.priority === selectedPriority;
@@ -356,8 +397,12 @@ const TaskManagement = () => {
                 <div className="flex-1 space-y-3 overflow-y-auto max-h-[650px] pr-1">
                   {columnTasks.map((task) => {
                     const taskId = task.id || task._id;
-                    const assignedIntern = interns.find(i => String(i.id || i._id) === String(task.assigneeId || task.assignee?.id || task.assignee?._id));
-                    const assignedProj = projects.find(p => String(p.id || p._id) === String(task.projectId || task.project?.id || task.project?._id));
+                    const assignedIntern = interns.find(i => String(i.id || i._id) === String(task.assigneeId || task.assignee?.id || task.assignee));
+                    const assignedProj = projects.find(p => String(p.id || p._id) === String(task.projectId || task.project?.id || task.project));
+
+                    // Date String Formatting
+                    const rawDate = task.dueDate || task.deadline;
+                    const formattedDate = rawDate ? new Date(rawDate).toLocaleDateString() : 'No Due Date';
 
                     return (
                       <div key={taskId} className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm hover:shadow-md transition-all group relative">
@@ -407,12 +452,12 @@ const TaskManagement = () => {
                         <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs text-slate-400">
                           <div className="flex items-center gap-1">
                             <Calendar className="w-3 h-3" />
-                            <span className="text-[11px]">{task.dueDate || task.deadline || 'No Due Date'}</span>
+                            <span className="text-[11px]">{formattedDate}</span>
                           </div>
 
                           {assignedIntern && (
                             <div className="w-6 h-6 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center text-[10px]" title={assignedIntern.fullName}>
-                              {assignedIntern.fullName.substring(0, 2).toUpperCase()}
+                              {assignedIntern.fullName ? assignedIntern.fullName.substring(0, 2).toUpperCase() : 'IN'}
                             </div>
                           )}
                         </div>

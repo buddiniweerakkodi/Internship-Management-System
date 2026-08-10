@@ -6,19 +6,60 @@ import AdminDashboard from './pages/AdminDashboard';
 import InternDashboard from './pages/InternDashboard';
 import InternManagement from './pages/InternManagement';
 import ProjectManagement from './pages/ProjectManagement';
-import TaskManagement from './pages/TaskManagement'; 
+import TaskManagement from './pages/TaskManagement';
+import ProtectedRoute from './components/ProtectedRoute'; 
 
 function App() {
   return (
     <Router>
       <Routes>
+        {/* Public Routes */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/admin-dashboard" element={<AdminDashboard />} />
-        <Route path="/admin-interns" element={<InternManagement />} />
-        <Route path="/admin-projects" element={<ProjectManagement />} />
-        <Route path="/admin-tasks" element={<TaskManagement />} /> 
-        <Route path="/intern-dashboard" element={<InternDashboard />} />
+
+        {/* Protected Routes */}
+        <Route 
+          path="/admin-dashboard" 
+          element={
+            <ProtectedRoute>
+              <AdminDashboard />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin-interns" 
+          element={
+            <ProtectedRoute>
+              <InternManagement />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin-projects" 
+          element={
+            <ProtectedRoute>
+              <ProjectManagement />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin-tasks" 
+          element={
+            <ProtectedRoute>
+              <TaskManagement />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/intern-dashboard" 
+          element={
+            <ProtectedRoute>
+              <InternDashboard />
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* Fallback */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>

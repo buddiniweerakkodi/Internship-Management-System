@@ -19,7 +19,7 @@ import com.example.demo.service.ProjectService;
 
 @RestController
 @RequestMapping("/api/v1/projects")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5173"}, allowedHeaders = "*")
 public class ProjectController {
 
     @Autowired

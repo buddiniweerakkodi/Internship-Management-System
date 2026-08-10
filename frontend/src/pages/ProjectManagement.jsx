@@ -36,6 +36,12 @@ const ProjectManagement = () => {
 
   const [techInput, setTechInput] = useState('');
 
+  // Helper function to attach JWT Bearer token
+  const getAuthHeader = () => {
+    const token = localStorage.getItem('token');
+    return token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+  };
+
   // Initial Data Fetching
   useEffect(() => {
     fetchProjects();
@@ -44,7 +50,7 @@ const ProjectManagement = () => {
 
   const fetchProjects = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/api/v1/projects');
+      const response = await axios.get('http://localhost:8080/api/v1/projects', getAuthHeader());
       setProjects(response.data);
     } catch (error) {
       console.error("Projects load failed:", error);
@@ -55,7 +61,7 @@ const ProjectManagement = () => {
 
   const fetchInterns = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/api/v1/interns');
+      const response = await axios.get('http://localhost:8080/api/v1/interns', getAuthHeader());
       setInternsList(response.data);
     } catch (error) {
       console.error("Interns load failed:", error);
@@ -136,10 +142,10 @@ const ProjectManagement = () => {
     e.preventDefault();
     try {
       if (editingId) {
-        await axios.put(`http://localhost:8080/api/v1/projects/${editingId}`, formData);
+        await axios.put(`http://localhost:8080/api/v1/projects/${editingId}`, formData, getAuthHeader());
         alert('Project Update Successfully!');
       } else {
-        await axios.post('http://localhost:8080/api/v1/projects', formData);
+        await axios.post('http://localhost:8080/api/v1/projects', formData, getAuthHeader());
         alert('New Project Saved successfully!');
       }
       setIsModalOpen(false);

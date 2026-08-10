@@ -1,47 +1,61 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { GraduationCap, ArrowLeft, Mail, Lock, Users, UserCheck } from 'lucide-react';
+import { GraduationCap, ArrowLeft, Mail, Lock, Users, UserCheck, Loader2 } from 'lucide-react';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
 const LoginPage = () => {
   const [role, setRole] = useState('intern');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError(''); 
+    setError('');
+    setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:8080/api/auth/login', {
+      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password, role }),
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        setError(errorText); 
+        const errorData = await response.json().catch(() => null);
+        const errorMessage = errorData?.message || errorData?.error || await response.text();
+        setError(errorMessage || 'Invalid credentials.');
         return;
       }
 
       const data = await response.json();
-      
-      // Token එක සහ User Data Save කිරීම (Role එක අනිවාර්යයෙන් Capital කර Save කරමු)
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('role', data.role.toUpperCase());
-      localStorage.setItem('email', data.email);
 
-      // Role එක අනුව Redirect කිරීම (Frontend එකේදීත් Capital අකුරු වලින් Check කිරීම)
-      if (data.role.toUpperCase() === 'SUPERVISOR') {
+      // Flexible token extraction to match various backend responses
+      const authToken = data.token || data.accessToken || data.jwtToken || data.jwt;
+
+      if (!authToken) {
+        setError('Token not received from server. Please check backend authentication.');
+        return;
+      }
+
+      localStorage.setItem('token', authToken);
+      localStorage.setItem('role', data.role ? data.role.toUpperCase() : role.toUpperCase());
+      localStorage.setItem('email', data.email || email);
+
+      const userRole = data.role ? data.role.toUpperCase() : role.toUpperCase();
+
+      if (userRole === 'SUPERVISOR' || userRole === 'ADMIN') {
         navigate('/admin-dashboard');
       } else {
         navigate('/intern-dashboard');
       }
-
     } catch (err) {
-      setError('An error occurred. Please try again.');
+      setError('Unable to connect to the server. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -86,31 +100,34 @@ const LoginPage = () => {
 
         <form className="space-y-4" onSubmit={handleLogin}>
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">Email Address</label>
+            <label htmlFor="email" className="block text-xs font-semibold text-gray-700 mb-1">Email Address</label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
               <input 
-                type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@example.com"
-                className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-blue-600 transition"
+                id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
+                placeholder="name@example.com" disabled={isLoading}
+                className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-blue-600 transition disabled:bg-gray-50"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-gray-700 mb-1">Password</label>
+            <label htmlFor="password" className="block text-xs font-semibold text-gray-700 mb-1">Password</label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
               <input 
-                type="password" required value={password} onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-blue-600 transition"
+                id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••" disabled={isLoading}
+                className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-blue-600 transition disabled:bg-gray-50"
               />
             </div>
           </div>
 
-          <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl font-semibold text-sm transition shadow-md shadow-blue-200 mt-2">
-            Log In as {role === 'intern' ? 'Intern' : 'Supervisor'}
+          <button 
+            type="submit" disabled={isLoading}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl font-semibold text-sm transition shadow-md shadow-blue-200 mt-2 flex items-center justify-center gap-2 disabled:opacity-70"
+          >
+            {isLoading ? <Loader2 size={16} className="animate-spin" /> : `Log In as ${role === 'intern' ? 'Intern' : 'Supervisor'}`}
           </button>
         </form>
       </div>

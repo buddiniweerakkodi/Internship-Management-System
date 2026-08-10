@@ -5,7 +5,6 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -21,7 +20,6 @@ import com.example.demo.repositories.TaskRepository;
 
 @RestController
 @RequestMapping("/api/v1/tasks")
-@CrossOrigin(origins = "*")
 public class TaskController {
 
     @Autowired
@@ -41,8 +39,11 @@ public class TaskController {
     public ResponseEntity<Task> updateTask(@PathVariable String id, @RequestBody Task taskDetails) {
         return taskRepository.findById(id).map(task -> {
             task.setTitle(taskDetails.getTitle());
+            task.setDescription(taskDetails.getDescription()); 
             task.setStatus(taskDetails.getStatus());
+            task.setPriority(taskDetails.getPriority()); 
             task.setProjectId(taskDetails.getProjectId());
+            task.setAssigneeId(taskDetails.getAssigneeId()); 
             task.setDeadline(taskDetails.getDeadline());
             return ResponseEntity.ok(taskRepository.save(task));
         }).orElse(ResponseEntity.notFound().build());

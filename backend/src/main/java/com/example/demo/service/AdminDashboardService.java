@@ -1,7 +1,7 @@
 package com.example.demo.service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,14 +25,13 @@ public class AdminDashboardService {
     public DashboardSummaryDTO getDashboardSummary() {
         DashboardSummaryDTO summary = new DashboardSummaryDTO();
 
-        // 1. Metric Counts (countByRoleAndActive ලෙස වෙනස් කර ඇත)
         summary.setActiveInterns(userRepository.countByRoleAndActive("INTERN", true));
         summary.setActiveProjects(projectRepository.countByStatus("IN_PROGRESS"));
         summary.setPendingSubmissions(taskRepository.countByStatus("SUBMITTED"));
-        summary.setOverdueTasks(taskRepository.countByDeadlineBeforeAndStatusNot(new Date(), "COMPLETED"));
+        
+        summary.setOverdueTasks(taskRepository.countByDeadlineBeforeAndStatusNot(LocalDate.now(), "COMPLETED"));
         summary.setCompletedTasks(taskRepository.countByStatus("COMPLETED"));
 
-        // 2. Task Overview
         Map<String, Long> taskMap = new HashMap<>();
         taskMap.put("todo", taskRepository.countByStatus("TODO"));
         taskMap.put("inProgress", taskRepository.countByStatus("IN_PROGRESS"));
@@ -41,7 +40,6 @@ public class AdminDashboardService {
         taskMap.put("completed", taskRepository.countByStatus("COMPLETED"));
         summary.setTaskOverview(taskMap);
 
-        // 3. Active Projects Progress calculation
         List<Project> activeProjects = projectRepository.findByStatus("IN_PROGRESS");
         List<DashboardSummaryDTO.ProjectProgressDTO> projectProgressList = new ArrayList<>();
 
