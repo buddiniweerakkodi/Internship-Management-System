@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { 
-  LayoutDashboard, Users, FolderKanban, ClipboardList, FileCheck, 
-  LogOut, Search, Bell, AlertTriangle, CheckCircle2, Clock, Upload, Edit3, ArrowRight 
+  Users, FolderKanban, ClipboardList, 
+  Search, Bell, AlertTriangle, CheckCircle2, Upload, Edit3, ArrowRight, FileCheck
 } from 'lucide-react';
+import Sidebar from '../components/Sidebar'; 
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -29,12 +30,7 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate('/login');
-  };
-
-  // Task Overview calculations
+  
   const taskOverview = dashboardData?.taskOverview || {};
   const todo = taskOverview.todo || 0;
   const inProgress = taskOverview.inProgress || 0;
@@ -45,63 +41,12 @@ const AdminDashboard = () => {
 
   const getPercent = (val) => totalTasks > 0 ? ((val / totalTasks) * 100).toFixed(1) : 0;
 
-  // Project Progress Colors
   const progressColors = ['bg-blue-600', 'bg-emerald-500', 'bg-amber-500', 'bg-indigo-600', 'bg-teal-500'];
 
   return (
     <div className="flex h-screen bg-slate-50 font-sans overflow-hidden">
-      {/* Sidebar */}
-      <aside className="w-64 bg-[#0f172a] text-slate-300 flex flex-col justify-between p-4 shrink-0">
-        <div>
-          <div className="flex items-center gap-3 px-3 py-4 mb-6">
-            <div className="bg-blue-600 text-white p-2 rounded-xl">
-              <LayoutDashboard size={20} />
-            </div>
-            <span className="text-xl font-bold text-white tracking-wide">InternTrack</span>
-          </div>
-
-          <nav className="space-y-1.5">
-            <button 
-              onClick={() => navigate('/admin-dashboard')} 
-              className="w-full text-left flex items-center gap-3 px-3 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium shadow-md"
-            >
-              <LayoutDashboard size={18} /> Dashboard
-            </button>
-
-            <button 
-              onClick={() => navigate('/admin-interns')} 
-              className="w-full text-left flex items-center gap-3 px-3 py-2.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl text-sm font-medium transition"
-            >
-              <Users size={18} /> Interns
-            </button>
-
-            <button 
-              onClick={() => navigate('/admin-projects')} 
-              className="w-full text-left flex items-center gap-3 px-3 py-2.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl text-sm font-medium transition"
-            >
-              <FolderKanban size={18} /> Projects
-            </button>
-
-            <button 
-              onClick={() => navigate('/admin-tasks')} 
-              className="w-full text-left flex items-center gap-3 px-3 py-2.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl text-sm font-medium transition"
-            >
-              <ClipboardList size={18} /> Tasks (Kanban Board)
-            </button>
-
-            <button 
-              onClick={() => navigate('/admin-logs')} 
-              className="w-full text-left flex items-center gap-3 px-3 py-2.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl text-sm font-medium transition"
-            >
-              <FileCheck size={18} /> Submissions & Daily Logs
-            </button>
-          </nav>
-        </div>
-
-        <button onClick={handleLogout} className="flex items-center gap-3 px-3 py-2.5 text-slate-400 hover:text-red-400 hover:bg-slate-800/60 rounded-xl text-sm font-medium transition">
-          <LogOut size={18} /> Logout
-        </button>
-      </aside>
+      
+      <Sidebar role="admin" activePage="dashboard" />
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-y-auto">

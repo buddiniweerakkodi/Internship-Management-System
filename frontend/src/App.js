@@ -8,6 +8,7 @@ import InternManagement from './pages/InternManagement';
 import ProjectManagement from './pages/ProjectManagement';
 import TaskManagement from './pages/TaskManagement';
 import ProtectedRoute from './components/ProtectedRoute'; 
+import SubmissionsAndLogs from './pages/SubmissionsAndLogs';
 
 function App() {
   return (
@@ -57,6 +58,15 @@ function App() {
               <InternDashboard />
             </ProtectedRoute>
           } 
+        />
+
+        <Route 
+          path="/admin-logs" 
+          element={
+            <ProtectedRoute>
+              <SubmissionsAndLogs />
+            </ProtectedRoute> 
+          }
         />
 
         {/* Fallback */}

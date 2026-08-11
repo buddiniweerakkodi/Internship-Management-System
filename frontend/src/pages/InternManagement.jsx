@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
 import { 
-  LayoutDashboard, Users, FolderKanban, CheckSquare, FileText, LogOut, Search, 
-  Plus, Edit2, ToggleLeft, ToggleRight, MoreVertical, X, Lock, Mail, User as UserIcon, 
+  Search, Plus, Edit2, ToggleLeft, ToggleRight, MoreVertical, X, Lock, Mail, User as UserIcon, 
   ChevronLeft, ChevronRight, Eye, EyeOff, Bell 
 } from 'lucide-react';
+import Sidebar from '../components/Sidebar'; 
 
 const InternManagement = () => {
-  const navigate = useNavigate();
   const [interns, setInterns] = useState([]);
   const [projects, setProjects] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -93,11 +91,6 @@ const InternManagement = () => {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate('/login');
-  };
-
   // Filtering Logic
   const filteredInterns = interns.filter(intern => {
     const matchesSearch = intern.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -108,69 +101,9 @@ const InternManagement = () => {
   });
 
   return (
-    <div className="flex min-h-screen bg-slate-50 font-sans">
-      {/* Left Sidebar */}
-      <aside className="w-64 bg-slate-900 text-white p-6 flex flex-col justify-between shrink-0">
-        <div>
-          {/* Logo */}
-          <div className="flex items-center gap-3 mb-8">
-            <div className="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center font-bold text-white shadow-lg shadow-blue-500/30">
-              IT
-            </div>
-            <span className="font-bold text-xl tracking-wide">InternTrack</span>
-          </div>
-
-          {/* Navigation Links */}
-          <nav className="space-y-1">
-            <button 
-              onClick={() => navigate('/admin-dashboard')}
-              className="flex items-center gap-3 w-full px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-xl text-sm font-medium transition-all"
-            >
-              <LayoutDashboard className="w-5 h-5" />
-              <span>Dashboard</span>
-            </button>
-
-            <button 
-              onClick={() => navigate('/admin-interns')}
-              className="flex items-center gap-3 w-full px-4 py-3 bg-blue-600 text-white rounded-xl text-sm font-medium transition-all shadow-md shadow-blue-600/20"
-            >
-              <Users className="w-5 h-5" />
-              <span>Interns</span>
-            </button>
-
-            <button 
-              onClick={() => navigate('/admin-projects')}
-              className="flex items-center gap-3 w-full px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-xl text-sm font-medium transition-all"
-            >
-              <FolderKanban className="w-5 h-5" />
-              <span>Projects</span>
-            </button>
-
-            {/* Tasks (Kanban Board) button එක active කරන ලදී */}
-            <button 
-              onClick={() => navigate('/admin-tasks')}
-              className="flex items-center gap-3 w-full px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-xl text-sm font-medium transition-all"
-            >
-              <CheckSquare className="w-5 h-5" />
-              <span>Tasks (Kanban Board)</span>
-            </button>
-
-            <button className="flex items-center gap-3 w-full px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-xl text-sm font-medium transition-all opacity-60 cursor-not-allowed">
-              <FileText className="w-5 h-5" />
-              <span>Submissions & Daily Logs</span>
-            </button>
-          </nav>
-        </div>
-
-        {/* Logout Button */}
-        <button 
-          onClick={handleLogout}
-          className="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-rose-400 hover:bg-slate-800/50 rounded-xl text-sm font-medium transition-all"
-        >
-          <LogOut className="w-5 h-5" />
-          <span>Logout</span>
-        </button>
-      </aside>
+    <div className="flex h-screen bg-slate-50 font-sans overflow-hidden">
+      
+      <Sidebar role="admin" activePage="interns" />
 
       {/* Main Content Area */}
       <main className="flex-1 p-8 overflow-y-auto">

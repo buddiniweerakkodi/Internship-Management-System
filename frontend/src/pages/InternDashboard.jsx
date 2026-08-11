@@ -1,50 +1,15 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { 
-  LayoutDashboard, ClipboardList, FileText, Send, LogOut, 
-  Search, Bell, AlertCircle, Plus, Calendar, ArrowUpRight, MessageSquare 
+  ClipboardList, Search, Bell, AlertCircle, Plus, Calendar, MessageSquare 
 } from 'lucide-react';
+import Sidebar from '../components/Sidebar'; 
 
 const InternDashboard = () => {
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate('/login');
-  };
 
   return (
     <div className="flex h-screen bg-slate-50 font-sans overflow-hidden">
-      {/* Sidebar */}
-      <aside className="w-64 bg-[#0f172a] text-slate-300 flex flex-col justify-between p-4 shrink-0">
-        <div>
-          <div className="flex items-center gap-3 px-3 py-4 mb-6">
-            <div className="bg-blue-600 text-white p-2 rounded-xl">
-              <LayoutDashboard size={20} />
-            </div>
-            <span className="text-xl font-bold text-white tracking-wide">InternTrack</span>
-          </div>
-
-          <nav className="space-y-1.5">
-            <a href="#dashboard" className="flex items-center gap-3 px-3 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-medium shadow-md">
-              <LayoutDashboard size={18} /> Dashboard
-            </a>
-            <a href="#tasks" className="flex items-center gap-3 px-3 py-2.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl text-sm font-medium transition">
-              <ClipboardList size={18} /> My Tasks
-            </a>
-            <a href="#logs" className="flex items-center gap-3 px-3 py-2.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl text-sm font-medium transition">
-              <FileText size={18} /> Daily Work Logs
-            </a>
-            <a href="#submissions" className="flex items-center gap-3 px-3 py-2.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl text-sm font-medium transition">
-              <Send size={18} /> My Submissions
-            </a>
-          </nav>
-        </div>
-
-        <button onClick={handleLogout} className="flex items-center gap-3 px-3 py-2.5 text-slate-400 hover:text-red-400 hover:bg-slate-800/60 rounded-xl text-sm font-medium transition">
-          <LogOut size={18} /> Logout
-        </button>
-      </aside>
+      
+      <Sidebar role="intern" activePage="dashboard" />
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-y-auto">
@@ -93,7 +58,7 @@ const InternDashboard = () => {
             </div>
 
             <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
-              <div className="p-3 bg-indigo-600 text-white rounded-xl"><Send size={20} /></div>
+              <div className="p-3 bg-indigo-600 text-white rounded-xl"><AlertCircle size={20} /></div>
               <div>
                 <p className="text-xs text-slate-500">Pending Submissions</p>
                 <h3 className="text-xl font-bold text-slate-800">2</h3>
@@ -111,7 +76,7 @@ const InternDashboard = () => {
             </div>
 
             <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
-              <div className="p-3 bg-emerald-100 text-emerald-600 rounded-xl"><FileText size={20} /></div>
+              <div className="p-3 bg-emerald-100 text-emerald-600 rounded-xl"><ClipboardList size={20} /></div>
               <div>
                 <p className="text-xs text-slate-500">Assigned Project</p>
                 <h3 className="text-sm font-bold text-slate-800">Waste2Worth</h3>

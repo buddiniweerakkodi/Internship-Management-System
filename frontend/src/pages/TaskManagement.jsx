@@ -2,10 +2,9 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { 
-  LayoutDashboard, Users, FolderKanban, CheckSquare, FileText, LogOut, Search, 
-  Plus, Edit2, Trash2, X, Bell, Calendar, User as UserIcon, CheckCircle2, 
-  Clock, AlertCircle, ChevronRight, Filter
+  Search, Plus, Edit2, Trash2, X, Bell, Calendar
 } from 'lucide-react';
+import Sidebar from '../components/Sidebar';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
@@ -48,6 +47,17 @@ const TaskManagement = () => {
     };
   };
 
+  // Helper to format ISO/date string to YYYY-MM-DD for HTML date inputs
+  const formatDateForInput = (dateString) => {
+    if (!dateString) return '';
+    try {
+      const date = new Date(dateString);
+      return date.toISOString().split('T')[0];
+    } catch {
+      return '';
+    }
+  };
+
   // Error Handler 
   const handleApiError = (err) => {
     console.error("API Error Response:", err.response || err);
@@ -75,7 +85,6 @@ const TaskManagement = () => {
   const fetchTasks = async () => {
     try {
       const res = await axios.get(`${API_BASE_URL}/api/v1/tasks`, getAuthHeaders());
-      
       
       const normalizedTasks = (res.data || []).map(task => ({
         ...task,
@@ -116,7 +125,7 @@ const TaskManagement = () => {
         description: task.description || '',
         status: task.status || 'TO_DO',
         priority: task.priority || 'MEDIUM',
-        dueDate: task.dueDate || task.deadline || '',
+        dueDate: formatDateForInput(task.dueDate || task.deadline),
         projectId: task.projectId || task.project?.id || task.project || '',
         assigneeId: task.assigneeId || task.assignee?.id || task.assignee || ''
       });
@@ -128,8 +137,8 @@ const TaskManagement = () => {
         status: defaultStatus,
         priority: 'MEDIUM',
         dueDate: '',
-        projectId: projects[0]?.id || '',
-        assigneeId: interns[0]?.id || ''
+        projectId: projects[0]?.id || projects[0]?._id || '',
+        assigneeId: interns[0]?.id || interns[0]?._id || ''
       });
     }
     setIsModalOpen(true);
@@ -139,7 +148,6 @@ const TaskManagement = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-   
     const payload = {
       ...formData,
       deadline: formData.dueDate
@@ -192,12 +200,7 @@ const TaskManagement = () => {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate('/login');
-  };
-
-  // Filter Tasks (Safe checkings included)
+  // Filter Tasks
   const filteredTasks = tasks.filter(task => {
     const titleMatch = task.title ? task.title.toLowerCase().includes(searchTerm.toLowerCase()) : false;
     const descMatch = task.description ? task.description.toLowerCase().includes(searchTerm.toLowerCase()) : false;
@@ -224,68 +227,11 @@ const TaskManagement = () => {
   ];
 
   return (
-    <div className="flex min-h-screen bg-slate-50 font-sans">
-      {/* Left Sidebar */}
-      <aside className="w-64 bg-slate-900 text-white p-6 flex flex-col justify-between shrink-0">
-        <div>
-          <div className="flex items-center gap-3 mb-8">
-            <div className="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center font-bold text-white shadow-lg shadow-blue-500/30">
-              IT
-            </div>
-            <span className="font-bold text-xl tracking-wide">InternTrack</span>
-          </div>
+    <div className="flex h-screen bg-slate-50 font-sans overflow-hidden">
+      <Sidebar role="admin" activePage="tasks" />
 
-          <nav className="space-y-1">
-            <button 
-              onClick={() => navigate('/admin-dashboard')}
-              className="flex items-center gap-3 w-full px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-xl text-sm font-medium transition-all"
-            >
-              <LayoutDashboard className="w-5 h-5" />
-              <span>Dashboard</span>
-            </button>
-
-            <button 
-              onClick={() => navigate('/admin-interns')}
-              className="flex items-center gap-3 w-full px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-xl text-sm font-medium transition-all"
-            >
-              <Users className="w-5 h-5" />
-              <span>Interns</span>
-            </button>
-
-            <button 
-              onClick={() => navigate('/admin-projects')}
-              className="flex items-center gap-3 w-full px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-xl text-sm font-medium transition-all"
-            >
-              <FolderKanban className="w-5 h-5" />
-              <span>Projects</span>
-            </button>
-
-            <button 
-              onClick={() => navigate('/admin-tasks')}
-              className="flex items-center gap-3 w-full px-4 py-3 bg-blue-600 text-white rounded-xl text-sm font-medium transition-all shadow-md shadow-blue-600/20"
-            >
-              <CheckSquare className="w-5 h-5" />
-              <span>Tasks (Kanban Board)</span>
-            </button>
-
-            <button className="flex items-center gap-3 w-full px-4 py-3 text-slate-400 hover:bg-slate-800 hover:text-white rounded-xl text-sm font-medium transition-all opacity-60 cursor-not-allowed">
-              <FileText className="w-5 h-5" />
-              <span>Submissions & Daily Logs</span>
-            </button>
-          </nav>
-        </div>
-
-        <button 
-          onClick={handleLogout}
-          className="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-rose-400 hover:bg-slate-800/50 rounded-xl text-sm font-medium transition-all"
-        >
-          <LogOut className="w-5 h-5" />
-          <span>Logout</span>
-        </button>
-      </aside>
-
-      {/* Main Content Area */}
-      <main className="flex-1 p-8 overflow-x-auto">
+      {/* Main Content Area - Fully Independent Scroll */}
+      <main className="flex-1 p-8 overflow-y-auto overflow-x-auto h-screen">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-2xl font-bold text-slate-800">Tasks Board</h1>
@@ -297,6 +243,8 @@ const TaskManagement = () => {
               <input 
                 type="text" 
                 placeholder="Search interns, projects, tasks..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 shadow-sm"
               />
             </div>
@@ -335,7 +283,7 @@ const TaskManagement = () => {
             <select
               value={selectedProject}
               onChange={(e) => setSelectedProject(e.target.value)}
-              className="px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm text-slate-600 focus:outline-none shadow-sm"
+              className="px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm text-slate-600 focus:outline-none shadow-sm cursor-pointer"
             >
               <option value="ALL">All Projects</option>
               {projects.map(p => (
@@ -346,7 +294,7 @@ const TaskManagement = () => {
             <select
               value={selectedAssignee}
               onChange={(e) => setSelectedAssignee(e.target.value)}
-              className="px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm text-slate-600 focus:outline-none shadow-sm"
+              className="px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm text-slate-600 focus:outline-none shadow-sm cursor-pointer"
             >
               <option value="ALL">All Assignees</option>
               {interns.map(i => (
@@ -357,7 +305,7 @@ const TaskManagement = () => {
             <select
               value={selectedPriority}
               onChange={(e) => setSelectedPriority(e.target.value)}
-              className="px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm text-slate-600 focus:outline-none shadow-sm"
+              className="px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm text-slate-600 focus:outline-none shadow-sm cursor-pointer"
             >
               <option value="ALL">All Priorities</option>
               <option value="HIGH">High Priority</option>
@@ -441,7 +389,7 @@ const TaskManagement = () => {
                           <select
                             value={task.status}
                             onChange={(e) => handleStatusChange(taskId, e.target.value)}
-                            className="w-full text-xs bg-slate-50 border border-slate-200 rounded-lg py-1 px-2 text-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            className="w-full text-xs bg-slate-50 border border-slate-200 rounded-lg py-1 px-2 text-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer"
                           >
                             {columns.map(c => (
                               <option key={c.key} value={c.key}>Move to: {c.title}</option>
@@ -520,7 +468,7 @@ const TaskManagement = () => {
                     <select
                       value={formData.status}
                       onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                      className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none"
+                      className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none cursor-pointer"
                     >
                       {columns.map(c => (
                         <option key={c.key} value={c.key}>{c.title}</option>
@@ -533,7 +481,7 @@ const TaskManagement = () => {
                     <select
                       value={formData.priority}
                       onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                      className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none"
+                      className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none cursor-pointer"
                     >
                       <option value="LOW">Low</option>
                       <option value="MEDIUM">Medium</option>
@@ -548,7 +496,7 @@ const TaskManagement = () => {
                     <select
                       value={formData.projectId}
                       onChange={(e) => setFormData({ ...formData, projectId: e.target.value })}
-                      className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none"
+                      className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none cursor-pointer"
                     >
                       <option value="">Select Project</option>
                       {projects.map(p => (
@@ -562,7 +510,7 @@ const TaskManagement = () => {
                     <select
                       value={formData.assigneeId}
                       onChange={(e) => setFormData({ ...formData, assigneeId: e.target.value })}
-                      className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none"
+                      className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none cursor-pointer"
                     >
                       <option value="">Select Intern</option>
                       {interns.map(i => (
@@ -578,7 +526,7 @@ const TaskManagement = () => {
                     type="date"
                     value={formData.dueDate}
                     onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none"
+                    className="w-full px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none cursor-pointer"
                   />
                 </div>
 
@@ -586,13 +534,13 @@ const TaskManagement = () => {
                   <button
                     type="button"
                     onClick={() => setIsModalOpen(false)}
-                    className="px-4 py-2 text-xs font-medium text-slate-600 border border-slate-200 rounded-xl hover:bg-slate-50"
+                    className="px-4 py-2 text-xs font-medium text-slate-600 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 text-xs font-medium text-white bg-blue-600 rounded-xl hover:bg-blue-700 shadow-sm"
+                    className="px-4 py-2 text-xs font-medium text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors shadow-sm"
                   >
                     {editingTask ? 'Update Task' : 'Save Task'}
                   </button>
