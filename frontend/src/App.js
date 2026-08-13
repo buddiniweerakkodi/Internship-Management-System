@@ -7,8 +7,11 @@ import InternDashboard from './pages/InternDashboard';
 import InternManagement from './pages/InternManagement';
 import ProjectManagement from './pages/ProjectManagement';
 import TaskManagement from './pages/TaskManagement';
-import ProtectedRoute from './components/ProtectedRoute'; 
 import SubmissionsAndLogs from './pages/SubmissionsAndLogs';
+import ProtectedRoute from './components/ProtectedRoute'; 
+import MyTasks from './pages/MyTasks';
+import DailyWorkLogs from './pages/DailyWorkLogs';
+import MySubmissions from './pages/MySubmissions';
 
 function App() {
   return (
@@ -18,58 +21,47 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
 
-        {/* Protected Routes */}
+        {/* Protected Admin Routes */}
         <Route 
           path="/admin-dashboard" 
-          element={
-            <ProtectedRoute>
-              <AdminDashboard />
-            </ProtectedRoute>
-          } 
+          element={<ProtectedRoute allowedRole="admin"><AdminDashboard /></ProtectedRoute>} 
         />
         <Route 
           path="/admin-interns" 
-          element={
-            <ProtectedRoute>
-              <InternManagement />
-            </ProtectedRoute>
-          } 
+          element={<ProtectedRoute allowedRole="admin"><InternManagement /></ProtectedRoute>} 
         />
         <Route 
           path="/admin-projects" 
-          element={
-            <ProtectedRoute>
-              <ProjectManagement />
-            </ProtectedRoute>
-          } 
+          element={<ProtectedRoute allowedRole="admin"><ProjectManagement /></ProtectedRoute>} 
         />
         <Route 
           path="/admin-tasks" 
-          element={
-            <ProtectedRoute>
-              <TaskManagement />
-            </ProtectedRoute>
-          } 
+          element={<ProtectedRoute allowedRole="admin"><TaskManagement /></ProtectedRoute>} 
         />
-        <Route 
-          path="/intern-dashboard" 
-          element={
-            <ProtectedRoute>
-              <InternDashboard />
-            </ProtectedRoute>
-          } 
-        />
-
         <Route 
           path="/admin-logs" 
-          element={
-            <ProtectedRoute>
-              <SubmissionsAndLogs />
-            </ProtectedRoute> 
-          }
+          element={<ProtectedRoute allowedRole="admin"><SubmissionsAndLogs /></ProtectedRoute>}
         />
 
-        {/* Fallback */}
+        {/* Protected Intern Routes */}
+        <Route 
+          path="/intern-dashboard" 
+          element={<ProtectedRoute allowedRole="intern"><InternDashboard /></ProtectedRoute>} 
+        />
+        <Route 
+          path="/intern-tasks" 
+          element={<ProtectedRoute allowedRole="intern"><MyTasks /></ProtectedRoute>} 
+        />
+        <Route 
+          path="/intern-daily-logs" 
+          element={<ProtectedRoute allowedRole="intern"><DailyWorkLogs /></ProtectedRoute>} 
+        />
+        <Route 
+          path="/intern-submissions" 
+          element={<ProtectedRoute allowedRole="intern"><MySubmissions /></ProtectedRoute>} 
+        />
+
+        {/* Default Fallback */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>
