@@ -98,7 +98,7 @@ const MyTasks = () => {
           email: userEmail
         },
 
-        // URLs & Notes (Dual naming support for spring boot backend)
+        // URLs & Notes
         repoUrl: submitForm.repoUrl,
         githubUrl: submitForm.repoUrl,
         docUrl: submitForm.docUrl,
@@ -132,9 +132,11 @@ const MyTasks = () => {
     <div className="flex h-screen bg-[#f8fafc] font-sans overflow-hidden">
       <Sidebar role="intern" activePage="tasks" />
 
-      <div className="flex-1 flex flex-col overflow-y-auto">
-        {/* Header */}
-        <header className="bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between sticky top-0 z-10">
+      {/* Changed overflow-y-auto to overflow-hidden here */}
+      <div className="flex-1 flex flex-col h-screen overflow-hidden">
+        
+        {/* Header - Removed sticky top-0 as it's no longer needed */}
+        <header className="bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between shrink-0 z-10">
           <div className="flex items-center gap-4">
             <h1 className="text-xl font-bold text-slate-800">My Assigned Tasks</h1>
             <span className="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full">{activeTasksCount} Active Tasks</span>
@@ -167,9 +169,11 @@ const MyTasks = () => {
           </div>
         </header>
 
-        <main className="p-8 flex gap-6 h-full">
-          {/* Main Content Area */}
-          <div className="flex-1 overflow-y-auto">
+        {/* Main Content Area - Added flex-1 and overflow-hidden */}
+        <main className="p-8 flex gap-6 flex-1 overflow-hidden">
+          
+          {/* Tasks List - Only this part will scroll now */}
+          <div className="flex-1 overflow-y-auto pr-2 pb-8">
             {isLoading ? (
               <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-blue-600" /></div>
             ) : filteredTasks.length === 0 ? (
@@ -239,8 +243,8 @@ const MyTasks = () => {
 
           {/* Right Side Panel for Submission */}
           {selectedTask && (
-            <div className="w-96 bg-white border border-slate-200 rounded-2xl shadow-xl flex flex-col shrink-0 h-fit">
-              <div className="p-4 border-b border-slate-100 flex justify-between items-center">
+            <div className="w-96 bg-white border border-slate-200 rounded-2xl shadow-xl flex flex-col shrink-0 h-fit max-h-full overflow-y-auto pb-4">
+              <div className="p-4 border-b border-slate-100 flex justify-between items-center sticky top-0 bg-white z-10">
                 <h3 className="font-bold text-slate-800">Submit Work</h3>
                 <button onClick={() => setSelectedTask(null)} className="text-slate-400 hover:text-slate-700"><X size={20}/></button>
               </div>
