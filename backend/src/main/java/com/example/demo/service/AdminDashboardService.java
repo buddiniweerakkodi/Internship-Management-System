@@ -46,9 +46,12 @@ public class AdminDashboardService {
         if (activeProjects != null) {
             for (Project project : activeProjects) {
                 long totalTasks = taskRepository.countByProjectId(project.getId());
+                
                 long completedTasks = taskRepository.countByProjectIdAndStatus(project.getId(), "COMPLETED");
+                long submittedTasks = taskRepository.countByProjectIdAndStatus(project.getId(), "SUBMITTED");
+                long totalProgressTasks = completedTasks + submittedTasks;
 
-                int progressPercentage = (totalTasks > 0) ? (int) ((completedTasks * 100) / totalTasks) : 0;
+                int progressPercentage = (totalTasks > 0) ? (int) ((totalProgressTasks * 100) / totalTasks) : 0;
 
                 DashboardSummaryDTO.ProjectProgressDTO dto = new DashboardSummaryDTO.ProjectProgressDTO();
                 dto.setName(project.getName());

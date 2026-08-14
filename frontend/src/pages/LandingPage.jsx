@@ -7,27 +7,22 @@ import {
   Users, 
   BarChart3, 
   ArrowRight,
-  LayoutDashboard,
   Folder,
   ClipboardList,
   UserCheck,
-  FileText,
   Settings,
   Bell,
-  CheckCircle2,
-  Clock,
   Layout,
   MessageSquare,
-  Search,
   Rocket,
-  BarChart2,
-  CheckSquare
+  CheckSquare,
+  Clock,
+  Send,
+  MessageCircle,
+  TrendingUp
 } from 'lucide-react';
 
-// Brand & Custom SVGs (Avoids missing lucide export errors)
-const CodeIcon = ({ size = 16 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
-);
+// Brand & Custom SVGs
 const FacebookIcon = ({ size = 16 }) => (
   <svg width={size} height={size} fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
 );
@@ -57,7 +52,6 @@ const LandingPage = () => {
         <div className="hidden md:flex gap-10 text-sm font-semibold text-gray-600">
           <a href="#home" className="text-blue-600 border-b-2 border-blue-600 pb-1">Home</a>
           <a href="#features" className="hover:text-blue-600 transition">Features</a>
-          <a href="#about" className="hover:text-blue-600 transition">About Us</a>
         </div>
 
         <Link 
@@ -86,7 +80,7 @@ const LandingPage = () => {
           <div className="pt-2">
             <Link 
               to="/login" 
-              className="bg-blue-600 text-white px-7 py-3.5 rounded-xl text-base font-semibold hover:bg-blue-700 shadow-lg shadow-blue-600/30 transition flex items-center gap-2.5 w-max"
+              className="bg-blue-600 text-white px-7 py-3.5 rounded-xl text-base font-semibold hover:bg-blue-700 shadow-lg shadow-blue-600/30 transition flex items-center gap-2.5 w-max hover:-translate-y-0.5"
             >
               <Rocket size={18} /> Get Started / Login
             </Link>
@@ -101,29 +95,27 @@ const LandingPage = () => {
 
         {/* Hero Right Image */}
         <div className="lg:col-span-7 relative z-10 w-full flex justify-center items-center">
-        {/* පසුපස තියෙන Soft Blue Glow Effect එක */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100%] h-[100%] bg-blue-100/60 rounded-full blur-3xl opacity-60 -z-10"></div>
-        
-        <img 
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100%] h-[100%] bg-blue-100/60 rounded-full blur-3xl opacity-60 -z-10"></div>
+          
+          <img 
             src={dashboardImg} 
             alt="InternTrack Dashboard Preview" 
             className="rounded-2xl shadow-2xl border border-gray-200/80 w-full max-w-3xl object-cover hover:scale-[1.01] transition duration-300"
-        />
+          />
         </div>
-    
       </section>
 
       {/* 3. Built for Both Roles Section */}
       <section className="py-8 max-w-5xl mx-auto px-6">
         <div className="flex items-center justify-center gap-4 mb-6">
           <div className="h-px bg-gray-200 w-16"></div>
-          <span className="text-xs font-bold text-gray-700 tracking-wider">Built for Both Roles</span>
+          <span className="text-xs font-bold text-gray-700 tracking-wider uppercase">Built for Both Roles</span>
           <div className="h-px bg-gray-200 w-16"></div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 justify-center">
           {/* Supervisor Card */}
-          <div className="bg-white border border-blue-100 shadow-sm hover:shadow-md transition rounded-full p-3 px-6 flex items-center gap-4">
+          <div className="bg-white border border-blue-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition duration-300 rounded-2xl md:rounded-full p-4 px-6 flex items-center gap-4">
             <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center text-blue-600 shrink-0 border border-blue-100">
               <UserCheck size={24} />
             </div>
@@ -131,13 +123,17 @@ const LandingPage = () => {
               <h3 className="font-bold text-gray-900 text-sm">Supervisor Portal</h3>
               <p className="text-[11px] text-gray-500 leading-tight mt-0.5">Manage interns, create projects, assign tasks, review submissions, and provide feedback.</p>
             </div>
-            <button className="w-7 h-7 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-600 hover:text-white transition shrink-0">
-              <ArrowRight size={14} />
-            </button>
+            <Link 
+              to="/login"
+              className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-600 hover:text-white transition shrink-0"
+              title="Go to Login"
+            >
+              <ArrowRight size={16} />
+            </Link>
           </div>
 
           {/* Intern Card */}
-          <div className="bg-white border border-emerald-100 shadow-sm hover:shadow-md transition rounded-full p-3 px-6 flex items-center gap-4">
+          <div className="bg-white border border-emerald-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition duration-300 rounded-2xl md:rounded-full p-4 px-6 flex items-center gap-4">
             <div className="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-600 shrink-0 border border-emerald-100">
               <GraduationCap size={24} />
             </div>
@@ -145,9 +141,13 @@ const LandingPage = () => {
               <h3 className="font-bold text-gray-900 text-sm">Intern Portal</h3>
               <p className="text-[11px] text-gray-500 leading-tight mt-0.5">View assigned tasks, update progress, submit daily logs, and track growth.</p>
             </div>
-            <button className="w-7 h-7 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center hover:bg-emerald-600 hover:text-white transition shrink-0">
-              <ArrowRight size={14} />
-            </button>
+            <Link 
+              to="/login"
+              className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center hover:bg-emerald-600 hover:text-white transition shrink-0"
+              title="Go to Login"
+            >
+              <ArrowRight size={16} />
+            </Link>
           </div>
         </div>
       </section>
@@ -155,72 +155,89 @@ const LandingPage = () => {
       {/* 4. Features Section */}
       <section id="features" className="py-16 bg-white border-t border-gray-100">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-10">
-            <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full tracking-wider border border-blue-100">FEATURES</span>
+          <div className="text-center mb-12">
+            <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full tracking-wider border border-blue-100 uppercase">KEY FEATURES</span>
             <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mt-3">Everything You Need to Manage Internships</h2>
-            <p className="text-gray-500 mt-1.5 text-xs max-w-xl mx-auto">Powerful features designed to simplify internship management and boost productivity.</p>
+            <p className="text-gray-500 mt-1.5 text-xs max-w-xl mx-auto">Powerful features designed to simplify internship management, task workflow, and productivity.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             
-            {/* Feature 1 */}
-            <div className="bg-blue-50/40 border border-blue-100 rounded-2xl p-5 flex flex-col justify-between hover:shadow-md transition">
-              <div>
-                <div className="w-10 h-10 bg-blue-500 text-white rounded-xl flex items-center justify-center mb-4 shadow-sm">
-                  <Search size={20} />
-                </div>
-                <h3 className="font-bold text-gray-900 text-sm mb-2">Intern Tracking</h3>
-                <p className="text-xs text-gray-600 leading-relaxed">Manage intern profiles, track progress, skills, and overall performance in one place.</p>
+            {/* Feature 1: Centralized Dashboards (Blue Tint) */}
+            <div className="bg-blue-50/50 border border-blue-100 rounded-2xl p-6 flex flex-col shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group cursor-pointer">
+              <div className="w-12 h-12 bg-blue-500 text-white rounded-xl flex items-center justify-center mb-5 shadow-sm">
+                <Layout size={24} />
               </div>
-              <a href="#" className="text-xs font-bold text-blue-600 flex items-center gap-1 mt-6 hover:gap-2 transition-all">Learn more <ArrowRight size={12}/></a>
+              <h3 className="font-bold text-gray-900 text-base mb-2 group-hover:text-blue-600 transition-colors">1. Centralized Dashboards</h3>
+              <p className="text-xs text-gray-600 leading-relaxed">
+                Dedicated Admin and Intern dashboards designed to control, monitor, and streamline the entire internship program from a single unified workspace.
+              </p>
             </div>
 
-            {/* Feature 2 */}
-            <div className="bg-emerald-50/40 border border-emerald-100 rounded-2xl p-5 flex flex-col justify-between hover:shadow-md transition">
-              <div>
-                <div className="w-10 h-10 bg-emerald-500 text-white rounded-xl flex items-center justify-center mb-4 shadow-sm">
-                  <Folder size={20} />
-                </div>
-                <h3 className="font-bold text-gray-900 text-sm mb-2">Project Allocation</h3>
-                <p className="text-xs text-gray-600 leading-relaxed">Create projects, assign interns, set deadlines, and monitor progress effortlessly.</p>
+            {/* Feature 2: Intern Management & Onboarding (Indigo Tint) */}
+            <div className="bg-indigo-50/50 border border-indigo-100 rounded-2xl p-6 flex flex-col shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group cursor-pointer">
+              <div className="w-12 h-12 bg-indigo-500 text-white rounded-xl flex items-center justify-center mb-5 shadow-sm">
+                <Users size={24} />
               </div>
-              <a href="#" className="text-xs font-bold text-emerald-600 flex items-center gap-1 mt-6 hover:gap-2 transition-all">Learn more <ArrowRight size={12}/></a>
+              <h3 className="font-bold text-gray-900 text-base mb-2 group-hover:text-indigo-600 transition-colors">2. Intern Management & Onboarding</h3>
+              <p className="text-xs text-gray-600 leading-relaxed">
+                Effortlessly onboard new interns, manage account statuses (Active/Inactive), and assign team members to relevant projects with ease.
+              </p>
             </div>
 
-            {/* Feature 3 */}
-            <div className="bg-purple-50/40 border border-purple-100 rounded-2xl p-5 flex flex-col justify-between hover:shadow-md transition">
-              <div>
-                <div className="w-10 h-10 bg-purple-500 text-white rounded-xl flex items-center justify-center mb-4 shadow-sm">
-                  <Layout size={20} />
-                </div>
-                <h3 className="font-bold text-gray-900 text-sm mb-2">Kanban Task Board</h3>
-                <p className="text-xs text-gray-600 leading-relaxed">Organize tasks using an intuitive Kanban board, track progress across stages, and submit completion links easily.</p>
+            {/* Feature 3: Project & Task Management (Purple Tint) */}
+            <div className="bg-purple-50/50 border border-purple-100 rounded-2xl p-6 flex flex-col shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group cursor-pointer">
+              <div className="w-12 h-12 bg-purple-500 text-white rounded-xl flex items-center justify-center mb-5 shadow-sm">
+                <Folder size={24} />
               </div>
-              <a href="#" className="text-xs font-bold text-purple-600 flex items-center gap-1 mt-6 hover:gap-2 transition-all">Learn more <ArrowRight size={12}/></a>
+              <h3 className="font-bold text-gray-900 text-base mb-2 group-hover:text-purple-600 transition-colors">3. Project & Task Management</h3>
+              <p className="text-xs text-gray-600 leading-relaxed">
+                Create projects and tasks, set priorities (High/Medium/Low) and due dates, and track task progress seamlessly from To Do to Completed.
+              </p>
             </div>
 
-            {/* Feature 4 */}
-            <div className="bg-amber-50/40 border border-amber-100 rounded-2xl p-5 flex flex-col justify-between hover:shadow-md transition">
-              <div>
-                <div className="w-10 h-10 bg-amber-500 text-white rounded-xl flex items-center justify-center mb-4 shadow-sm">
-                  <ClipboardList size={20} />
-                </div>
-                <h3 className="font-bold text-gray-900 text-sm mb-2">Daily Logs & Submissions</h3>
-                <p className="text-xs text-gray-600 leading-relaxed">Submit daily work logs, share GitHub/Doc links, highlight blockers, and receive direct supervisor feedback.</p>
+            {/* Feature 4: Daily Work Logging (Amber Tint) */}
+            <div className="bg-amber-50/50 border border-amber-100 rounded-2xl p-6 flex flex-col shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group cursor-pointer">
+              <div className="w-12 h-12 bg-amber-500 text-white rounded-xl flex items-center justify-center mb-5 shadow-sm">
+                <Clock size={24} />
               </div>
-              <a href="#" className="text-xs font-bold text-amber-600 flex items-center gap-1 mt-6 hover:gap-2 transition-all">Learn more <ArrowRight size={12}/></a>
+              <h3 className="font-bold text-gray-900 text-base mb-2 group-hover:text-amber-600 transition-colors">4. Daily Work Logging</h3>
+              <p className="text-xs text-gray-600 leading-relaxed">
+                Enable interns to log daily working hours, completed tasks, current blockers, and next-day plans for complete workflow transparency.
+              </p>
             </div>
 
-            {/* Feature 5 */}
-            <div className="bg-teal-50/40 border border-teal-100 rounded-2xl p-5 flex flex-col justify-between hover:shadow-md transition">
-              <div>
-                <div className="w-10 h-10 bg-teal-500 text-white rounded-xl flex items-center justify-center mb-4 shadow-sm">
-                  <MessageSquare size={20} />
-                </div>
-                <h3 className="font-bold text-gray-900 text-sm mb-2">Submission & Supervisor Feedback</h3>
-                <p className="text-xs text-gray-600 leading-relaxed">Supervisors can review submissions, request revisions, approve work, and add valuable feedback.</p>
+            {/* Feature 5: Seamless Work Submission (Emerald Tint) */}
+            <div className="bg-emerald-50/50 border border-emerald-100 rounded-2xl p-6 flex flex-col shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group cursor-pointer">
+              <div className="w-12 h-12 bg-emerald-500 text-white rounded-xl flex items-center justify-center mb-5 shadow-sm">
+                <Send size={24} />
               </div>
-              <a href="#" className="text-xs font-bold text-teal-600 flex items-center gap-1 mt-6 hover:gap-2 transition-all">Learn more <ArrowRight size={12}/></a>
+              <h3 className="font-bold text-gray-900 text-base mb-2 group-hover:text-emerald-600 transition-colors">5. Seamless Work Submission</h3>
+              <p className="text-xs text-gray-600 leading-relaxed">
+                Direct submission of finished work complete with GitHub repository links, documentation/demo links, and detailed completion notes.
+              </p>
+            </div>
+
+            {/* Feature 6: Supervisor Review & Feedback Loop (Rose Tint) */}
+            <div className="bg-rose-50/50 border border-rose-100 rounded-2xl p-6 flex flex-col shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group cursor-pointer">
+              <div className="w-12 h-12 bg-rose-500 text-white rounded-xl flex items-center justify-center mb-5 shadow-sm">
+                <MessageCircle size={24} />
+              </div>
+              <h3 className="font-bold text-gray-900 text-base mb-2 group-hover:text-rose-600 transition-colors">6. Supervisor Review & Feedback Loop</h3>
+              <p className="text-xs text-gray-600 leading-relaxed">
+                Streamlined review process for supervisors to evaluate submissions and daily logs—easily approving work or requesting necessary revisions with instant feedback.
+              </p>
+            </div>
+
+            {/* Feature 7: Real-Time Progress & Analytics (Teal Tint) */}
+            <div className="bg-teal-50/50 border border-teal-100 rounded-2xl p-6 flex flex-col shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group cursor-pointer sm:col-span-2 lg:col-span-1">
+              <div className="w-12 h-12 bg-teal-500 text-white rounded-xl flex items-center justify-center mb-5 shadow-sm">
+                <TrendingUp size={24} />
+              </div>
+              <h3 className="font-bold text-gray-900 text-base mb-2 group-hover:text-teal-600 transition-colors">7. Real-Time Progress & Analytics</h3>
+              <p className="text-xs text-gray-600 leading-relaxed">
+                Monitor overall project completion rates, track overdue tasks, and analyze team activity through real-time visual charts and key metrics.
+              </p>
             </div>
 
           </div>
@@ -229,9 +246,9 @@ const LandingPage = () => {
 
       {/* 5. Footer */}
       <footer className="bg-[#0b132b] text-white pt-12 pb-6 border-t border-slate-800">
-        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 border-b border-slate-800 pb-10 mb-6">
+        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 border-b border-slate-800 pb-10 mb-6">
           
-          <div className="lg:col-span-2 space-y-3">
+          <div className="lg:col-span-1 space-y-3">
             <div className="flex items-center gap-2 text-xl font-bold">
               <div className="bg-blue-600 text-white p-1 rounded-lg">
                 <GraduationCap size={20} />
@@ -253,24 +270,17 @@ const LandingPage = () => {
           </div>
 
           <div>
-            <h4 className="font-bold text-xs uppercase tracking-wider text-slate-300 mb-3">Company</h4>
-            <ul className="space-y-2 text-xs text-slate-400">
-              <li><a href="#about" className="hover:text-white transition">About Us</a></li>
-              <li><a href="#" className="hover:text-white transition">Contact</a></li>
-              <li><a href="#" className="hover:text-white transition">Blog</a></li>
-            </ul>
-          </div>
-
-          <div>
             <h4 className="font-bold text-xs uppercase tracking-wider text-slate-300 mb-3">Resources</h4>
-            <ul className="space-y-2 text-xs text-slate-400 mb-4">
+            <ul className="space-y-2 text-xs text-slate-400">
               <li><a href="#" className="hover:text-white transition">Documentation</a></li>
               <li><a href="#" className="hover:text-white transition">FAQ</a></li>
               <li><a href="#" className="hover:text-white transition">Support</a></li>
             </ul>
+          </div>
 
+          <div>
             <h4 className="font-bold text-xs uppercase tracking-wider text-slate-300 mb-2">Stay Connected</h4>
-            <div className="flex gap-2.5">
+            <div className="flex gap-2.5 mt-3">
               <a href="#" className="w-7 h-7 rounded-full bg-slate-800 flex items-center justify-center text-slate-300 hover:bg-blue-600 hover:text-white transition"><FacebookIcon size={12}/></a>
               <a href="#" className="w-7 h-7 rounded-full bg-slate-800 flex items-center justify-center text-slate-300 hover:bg-blue-400 hover:text-white transition"><TwitterIcon size={12}/></a>
               <a href="#" className="w-7 h-7 rounded-full bg-slate-800 flex items-center justify-center text-slate-300 hover:bg-blue-700 hover:text-white transition"><LinkedinIcon size={12}/></a>

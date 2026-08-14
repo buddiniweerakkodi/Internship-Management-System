@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { 
-  ClipboardList, Search, AlertCircle, Plus, Calendar, MessageSquare, CheckCircle2, Loader2 
+  ClipboardList, Search, AlertCircle, Plus, Calendar, CheckCircle2, Loader2 
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar'; 
+import ProfileModal from '../components/ProfileModal'; 
+import { toast } from 'react-toastify'; 
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080';
 
@@ -21,6 +23,9 @@ const InternDashboard = () => {
   
   // Search State
   const [searchTerm, setSearchTerm] = useState('');
+
+  // Profile Modal State
+  const [showProfileModal, setShowProfileModal] = useState(false);
 
   // Auth Header Setup
   const getAuthHeaders = () => {
@@ -44,6 +49,8 @@ const InternDashboard = () => {
     try {
       const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
       const userId = storedUser.id || storedUser._id;
+      const userName = storedUser.fullName || storedUser.name || '';
+      const userEmail = storedUser.email || localStorage.getItem('email') || '';
 
       const [tasksRes, submissionsRes, logsRes, projectsRes] = await Promise.allSettled([
         axios.get(`${API_BASE_URL}/api/v1/tasks`, getAuthHeaders()),
@@ -52,29 +59,97 @@ const InternDashboard = () => {
         axios.get(`${API_BASE_URL}/api/v1/projects`, getAuthHeaders())
       ]);
 
+      // 1. Task Matching Logic
       const allTasks = tasksRes.status === 'fulfilled' ? tasksRes.value.data || [] : [];
-      const internTasks = allTasks.filter(t => t.assignedTo?.id === userId || t.assignedTo === userId || t.internId === userId);
+      const internTasks = allTasks.filter(t => {
+        const matchesId = 
+          t.assigneeId === userId || 
+          t.assignedTo?.id === userId || 
+          t.assignedTo?._id === userId || 
+          t.assignedTo === userId || 
+          t.internId === userId ||
+          t.assignedInternId === userId;
+
+        const matchesName = userName && (
+          (t.assignedInternName && t.assignedInternName.toLowerCase() === userName.toLowerCase()) ||
+          (t.assignedToName && t.assignedToName.toLowerCase() === userName.toLowerCase()) ||
+          (t.assignee && t.assignee.toLowerCase() === userName.toLowerCase()) ||
+          (t.assignedTo && typeof t.assignedTo === 'string' && t.assignedTo.toLowerCase() === userName.toLowerCase())
+        );
+
+        const matchesEmail = userEmail && (
+          t.assignedTo?.email === userEmail || 
+          t.assignedInternEmail === userEmail
+        );
+
+        // Fallback for demo unassigned tasks
+        const isUnassigned = !t.assigneeId && !t.assignedTo && !t.internId;
+
+        return matchesId || matchesName || matchesEmail || isUnassigned;
+      });
       setTasks(internTasks);
 
+      const internTaskIds = new Set(internTasks.map(t => String(t.id || t._id)));
+
+      // 2. Submissions Filtering
       const allSubmissions = submissionsRes.status === 'fulfilled' ? submissionsRes.value.data || [] : [];
-      const internSubmissions = allSubmissions.filter(s => s.intern?.id === userId || s.intern?._id === userId || s.internId === userId);
+      const internSubmissions = allSubmissions.filter(s => {
+        const subInternId = s.internId || s.intern?.id || s.intern?._id || (typeof s.intern === 'string' ? s.intern : null) || s.userId;
+        const matchesId = subInternId && userId && (String(subInternId) === String(userId));
+
+        const matchesName = userName && (
+          (s.internName && s.internName.toLowerCase() === userName.toLowerCase()) ||
+          (s.intern?.fullName && s.intern.fullName.toLowerCase() === userName.toLowerCase())
+        );
+
+        const matchesEmail = userEmail && (
+          (s.internEmail && s.internEmail.toLowerCase() === userEmail.toLowerCase()) ||
+          (s.intern?.email && s.intern.email.toLowerCase() === userEmail.toLowerCase())
+        );
+
+        const matchesTaskId = s.taskId && internTaskIds.has(String(s.taskId));
+
+        // Fallback for null intern in demo submissions
+        const isNullOrUnassigned = !subInternId && !s.internName && !s.internEmail;
+
+        return matchesId || matchesName || matchesEmail || matchesTaskId || isNullOrUnassigned;
+      });
       setSubmissions(internSubmissions);
 
+      // 3. Daily Work Logs Filtering
       const allLogs = logsRes.status === 'fulfilled' ? logsRes.value.data || [] : [];
-      const internLogs = allLogs.filter(l => l.intern?.id === userId || l.intern?._id === userId || l.internId === userId);
+      const internLogs = allLogs.filter(l => {
+        const logInternId = l.internId || l.intern?.id || l.intern?._id || (typeof l.intern === 'string' ? l.intern : null);
+        const matchesId = logInternId && userId && (String(logInternId) === String(userId));
+        const matchesName = userName && l.internName && l.internName.toLowerCase() === userName.toLowerCase();
+        const isNullLog = !logInternId && !l.internName;
+        return matchesId || matchesName || isNullLog;
+      });
       setDailyLogs(internLogs);
 
+      // 4. Assigned Project Search
       const allProjects = projectsRes.status === 'fulfilled' ? projectsRes.value.data || [] : [];
-      const userProject = allProjects.find(p => 
-        p.id === storedUser.projectId || 
-        p.interns?.some(i => i.id === userId || i._id === userId) ||
-        p.members?.some(m => m.id === userId || m._id === userId)
-      ) || allProjects[0] || null;
+      const userProject = allProjects.find(p => {
+        const matchesProjectId = (p.id && p.id === storedUser.assignedProjectId) || (p._id && p._id === storedUser.assignedProjectId);
+        
+        const isAssignedIntern = p.assignedInterns?.some(intern => {
+          if (typeof intern === 'string') return intern === userId || (userName && intern.toLowerCase() === userName.toLowerCase());
+          return intern?.id === userId || intern?._id === userId || (userName && intern?.fullName?.toLowerCase() === userName.toLowerCase());
+        });
+
+        const isInternMember = p.interns?.some(intern => {
+          if (typeof intern === 'string') return intern === userId || (userName && intern.toLowerCase() === userName.toLowerCase());
+          return intern?.id === userId || intern?._id === userId || (userName && intern?.fullName?.toLowerCase() === userName.toLowerCase());
+        });
+
+        return matchesProjectId || isAssignedIntern || isInternMember;
+      }) || allProjects[0] || null;
       
       setAssignedProject(userProject);
 
     } catch (error) {
       console.error("Error fetching Intern Dashboard data:", error);
+      toast.error("Failed to load dashboard data.");
     } finally {
       setIsLoading(false);
     }
@@ -82,12 +157,16 @@ const InternDashboard = () => {
 
   // Calculated Stats
   const activeTasksCount = tasks.filter(t => (t.status || '').toLowerCase() !== 'completed' && (t.status || '').toLowerCase() !== 'done').length;
-  const highPriorityTasksCount = tasks.filter(t => (t.priority || '').toLowerCase() === 'high' && (t.status || '').toLowerCase() !== 'done').length;
-  const pendingSubmissionsCount = submissions.filter(s => (s.status || '').toLowerCase().includes('pending')).length;
+  const highPriorityTasksCount = tasks.filter(t => (t.priority || '').toLowerCase() === 'high' && (t.status || '').toLowerCase() !== 'completed' && (t.status || '').toLowerCase() !== 'done').length;
+  
+  const pendingSubmissionsCount = submissions.filter(s => {
+    const st = (s.status || '').toUpperCase();
+    return st === 'PENDING' || st.includes('PENDING') || st === 'SUBMITTED';
+  }).length;
 
   const todayDateStr = new Date().toISOString().split('T')[0];
   const todayLog = dailyLogs.find(log => {
-    const logDate = new Date(log.date || log.createdAt).toISOString().split('T')[0];
+    const logDate = new Date(log.date || log.createdAt || Date.now()).toISOString().split('T')[0];
     return logDate === todayDateStr;
   });
   const isTodayLogSubmitted = !!todayLog;
@@ -119,15 +198,18 @@ const InternDashboard = () => {
             />
           </div>
 
-          <div className="flex items-center gap-3 border-l pl-6 border-slate-200">
+          <div 
+            className="flex items-center gap-3 border-l pl-6 border-slate-200 cursor-pointer hover:opacity-80 transition group"
+            onClick={() => setShowProfileModal(true)}
+          >
             <img 
-              src={currentUser?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser?.fullName || 'Intern'}`} 
-              alt="User" 
-              className="w-9 h-9 rounded-full bg-blue-100 object-cover" 
+              src={currentUser?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser?.fullName || 'User'}`} 
+              alt="User Profile" 
+              className="w-8 h-8 rounded-full bg-blue-100 border border-slate-200 object-cover" 
             />
             <div>
               <p className="text-xs font-bold text-slate-800">{currentUser?.fullName || 'Intern User'}</p>
-              <p className="text-[10px] text-slate-500">{currentUser?.role || 'Intern'} · {assignedProject?.name || 'Assigned Project'}</p>
+              <p className="text-[10px] text-blue-600 font-semibold">{currentUser?.role || 'Intern'} · View Profile</p>
             </div>
           </div>
         </header>
@@ -185,11 +267,13 @@ const InternDashboard = () => {
                 </div>
               </div>
 
-              <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
+              <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4 cursor-pointer hover:bg-slate-50 transition" onClick={() => navigate('/intern-project')}>
                 <div className="p-3 bg-emerald-100 text-emerald-600 rounded-xl"><ClipboardList size={20} /></div>
                 <div>
                   <p className="text-xs text-slate-500">Assigned Project</p>
-                  <h3 className="text-sm font-bold text-slate-800 truncate max-w-[120px]">{assignedProject?.name || 'No Project'}</h3>
+                  <h3 className="text-sm font-bold text-slate-800 truncate max-w-[120px]">
+                    {assignedProject?.title || assignedProject?.name || 'No Project'}
+                  </h3>
                   <span className="text-[10px] text-emerald-600 font-semibold">{assignedProject?.progress || 0}% Overall Progress</span>
                 </div>
               </div>
@@ -236,13 +320,13 @@ const InternDashboard = () => {
                           <div key={task.id || task._id || i} className="flex items-center justify-between p-3.5 bg-slate-50/70 border border-slate-100 rounded-xl">
                             <div className="space-y-1">
                               <div className="flex items-center gap-2">
-                                <p className="text-xs font-bold text-slate-800">{task.title}</p>
+                                <p className="text-xs font-bold text-slate-800">{task.title || task.taskTitle || 'Implement Daily Work Log API & Frontend Integration'}</p>
                                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${priorityColor}`}>
                                   {task.priority || 'Normal'}
                                 </span>
                               </div>
                               <p className="text-[10px] text-slate-400 flex items-center gap-1">
-                                <Calendar size={10} /> Due: {task.dueDate || 'No Deadline'}
+                                <Calendar size={10} /> Due: {task.deadline || task.dueDate || 'No Deadline'}
                               </p>
                             </div>
                             <div className="flex items-center gap-3">
@@ -327,15 +411,26 @@ const InternDashboard = () => {
                   <h3 className="text-sm font-bold text-slate-800">Assigned Project Overview</h3>
                   {assignedProject ? (
                     <div className="space-y-3">
-                      <p className="text-xs font-bold text-slate-800">{assignedProject.name || 'Project Name'}</p>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">{assignedProject.description || 'No project description available.'}</p>
+                      <p className="text-xs font-bold text-slate-800">
+                        {assignedProject.title || assignedProject.name || 'Project Name'}
+                      </p>
+                      <p className="text-[11px] text-slate-500 leading-relaxed">
+                        {assignedProject.description || 'No project description available.'}
+                      </p>
                       <div className="flex flex-wrap gap-1.5">
-                        {(assignedProject.technologies || ['React', 'Spring Boot', 'MongoDB']).map((tech, idx) => (
+                        {(assignedProject.techStack || assignedProject.technologies || ['React', 'Spring Boot', 'MongoDB']).map((tech, idx) => (
                           <span key={idx} className="text-[10px] bg-slate-100 text-slate-600 font-medium px-2 py-0.5 rounded-md">
                             {tech}
                           </span>
                         ))}
                       </div>
+                      <button 
+                        type="button"
+                        onClick={() => navigate('/intern-project')}
+                        className="w-full mt-2 bg-blue-50 text-blue-700 hover:bg-blue-100 font-semibold text-xs py-2 rounded-lg transition border border-blue-200"
+                      >
+                        View Full Project Details →
+                      </button>
                     </div>
                   ) : (
                     <p className="text-xs text-slate-400">No project assigned yet.</p>
@@ -356,6 +451,13 @@ const InternDashboard = () => {
           </main>
         )}
       </div>
+
+      <ProfileModal 
+        isOpen={showProfileModal} 
+        onClose={() => setShowProfileModal(false)} 
+        user={currentUser} 
+        onUpdate={setCurrentUser} 
+      />
     </div>
   );
 };

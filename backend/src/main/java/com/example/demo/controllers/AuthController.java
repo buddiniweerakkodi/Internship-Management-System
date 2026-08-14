@@ -62,8 +62,20 @@ public class AuthController {
         
         Map<String, Object> response = new HashMap<>();
         response.put("token", token);
+        response.put("id", user.getId());
+        response.put("fullName", user.getFullName());
         response.put("email", user.getEmail());
         response.put("role", user.getRole().toUpperCase());
+        response.put("avatar", user.getAvatar());
+        response.put("assignedProjectId", user.getAssignedProjectId());
+
+        Map<String, Object> userMap = new HashMap<>();
+        userMap.put("id", user.getId());
+        userMap.put("fullName", user.getFullName());
+        userMap.put("email", user.getEmail());
+        userMap.put("role", user.getRole().toUpperCase());
+        userMap.put("assignedProjectId", user.getAssignedProjectId());
+        response.put("user", userMap);
 
         return ResponseEntity.ok(response);
     }

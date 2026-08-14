@@ -41,9 +41,19 @@ const LoginPage = () => {
         return;
       }
 
+      const userObject = data.user || {
+        id: data.id,
+        fullName: data.fullName,
+        email: data.email || email,
+        role: data.role ? data.role.toUpperCase() : role.toUpperCase(),
+        assignedProjectId: data.assignedProjectId || ''
+      };
+
       localStorage.setItem('token', authToken);
       localStorage.setItem('role', data.role ? data.role.toUpperCase() : role.toUpperCase());
       localStorage.setItem('email', data.email || email);
+      
+      localStorage.setItem('user', JSON.stringify(userObject));
 
       const userRole = data.role ? data.role.toUpperCase() : role.toUpperCase();
 

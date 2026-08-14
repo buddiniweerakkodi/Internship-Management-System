@@ -27,6 +27,7 @@ const ProjectManagement = () => {
   // Form State
   const [formData, setFormData] = useState({
     title: '',
+    name: '',
     description: '',
     techStack: [],
     deadline: '',
@@ -107,14 +108,15 @@ const ProjectManagement = () => {
   // Open Modal (Create / Edit)
   const openModal = (project = null) => {
     if (project) {
-      setEditingId(project.id);
+      setEditingId(project.id || project._id);
       setFormData({
-        title: project.title || '',
+        title: project.title || project.name || '',
+        name: project.name || project.title || '',
         description: project.description || '',
-        techStack: project.techStack || [],
+        techStack: project.techStack || project.technologies || [],
         deadline: project.deadline || '',
         assignedInterns: project.assignedInterns 
-          ? project.assignedInterns.map(i => (typeof i === 'object' ? i.id : i)) 
+          ? project.assignedInterns.map(i => (typeof i === 'object' ? (i.id || i._id) : i)) 
           : [],
         status: project.status || 'In Progress'
       });
@@ -122,6 +124,7 @@ const ProjectManagement = () => {
       setEditingId(null);
       setFormData({
         title: '',
+        name: '',
         description: '',
         techStack: ['Spring Boot', 'React'],
         deadline: '',
@@ -135,25 +138,31 @@ const ProjectManagement = () => {
   // Form Submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const payload = {
+      ...formData,
+      name: formData.title // Compatibility සඳහා name field එකටත් title දානවා
+    };
+
     try {
       if (editingId) {
-        await axios.put(`http://localhost:8080/api/v1/projects/${editingId}`, formData, getAuthHeader());
-        alert('Project Update Successfully!');
+        await axios.put(`http://localhost:8080/api/v1/projects/${editingId}`, payload, getAuthHeader());
+        alert('Project Updated Successfully!');
       } else {
-        await axios.post('http://localhost:8080/api/v1/projects', formData, getAuthHeader());
+        await axios.post('http://localhost:8080/api/v1/projects', payload, getAuthHeader());
         alert('New Project Saved successfully!');
       }
       setIsModalOpen(false);
       fetchProjects();
     } catch (error) {
-      console.error("Project save is failed:", error);
-      alert('Project save is failed!');
+      console.error("Project save failed:", error);
+      alert('Project save failed!');
     }
   };
 
   // Filter Logic
   const filteredProjects = projects.filter(p => {
-    const matchesSearch = p.title?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    const projectTitle = p.title || p.name || '';
+    const matchesSearch = projectTitle.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           p.description?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === 'All Statuses' || p.status === statusFilter;
     const matchesTech = techFilter === 'All Technologies' || p.techStack?.includes(techFilter);
@@ -180,10 +189,7 @@ const ProjectManagement = () => {
                 className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-blue-500"
               />
             </div>
-            <div className="relative">
-              <Bell size={20} className="text-slate-600 cursor-pointer" />
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">5</span>
-            </div>
+
             <div className="flex items-center gap-3 border-l pl-6 border-slate-200">
               <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Admin" alt="Admin" className="w-9 h-9 rounded-full bg-blue-100" />
               <div>
@@ -244,7 +250,7 @@ const ProjectManagement = () => {
           {/* Project Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredProjects.map((project, index) => (
-              <div key={project.id || index} className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm flex flex-col justify-between hover:shadow-md transition">
+              <div key={project.id || project._id || index} className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm flex flex-col justify-between hover:shadow-md transition">
                 <div>
                   {/* Top Bar */}
                   <div className="flex items-start justify-between mb-3">
@@ -252,7 +258,7 @@ const ProjectManagement = () => {
                       <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl">
                         <Code2 size={20} />
                       </div>
-                      <h3 className="font-bold text-slate-800 text-sm leading-tight">{project.title}</h3>
+                      <h3 className="font-bold text-slate-800 text-sm leading-tight">{project.title || project.name}</h3>
                     </div>
                     <span className={`text-[10px] font-semibold px-2.5 py-1 rounded-full ${
                       project.status === 'Completed' ? 'bg-emerald-50 text-emerald-600' :
@@ -267,7 +273,7 @@ const ProjectManagement = () => {
 
                   {/* Tech Stack */}
                   <div className="flex flex-wrap gap-1.5 mb-4">
-                    {project.techStack?.map((tech, idx) => (
+                    {(project.techStack || project.technologies || []).map((tech, idx) => (
                       <span key={idx} className="text-[10px] font-medium bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">
                         {tech}
                       </span>
@@ -280,7 +286,8 @@ const ProjectManagement = () => {
                     <div className="flex items-center -space-x-2">
                       {project.assignedInterns && project.assignedInterns.length > 0 ? (
                         project.assignedInterns.slice(0, 3).map((intern, i) => {
-                          const name = typeof intern === 'object' ? intern.fullName : intern;
+                          const internObj = typeof intern === 'object' ? intern : internsList.find(item => item.id === intern || item._id === intern);
+                          const name = internObj ? internObj.fullName : intern;
                           return (
                             <img 
                               key={i} 
@@ -371,7 +378,7 @@ const ProjectManagement = () => {
                     required
                     placeholder="Enter project title" 
                     value={formData.title}
-                    onChange={(e) => setFormData({...formData, title: e.target.value})}
+                    onChange={(e) => setFormData({...formData, title: e.target.value, name: e.target.value})}
                     className="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-blue-500"
                   />
                 </div>
@@ -445,14 +452,16 @@ const ProjectManagement = () => {
                 >
                   <option value="">Select intern to add</option>
                   {internsList.map(intern => (
-                    <option key={intern.id} value={intern.id}>{intern.fullName || intern.name} ({intern.email})</option>
+                    <option key={intern.id || intern._id} value={intern.id || intern._id}>
+                      {intern.fullName || intern.name} ({intern.email})
+                    </option>
                   ))}
                 </select>
 
                 {/* Selected Interns Badges List */}
                 <div className="flex flex-wrap gap-1.5 mt-2">
                   {formData.assignedInterns.map(internId => {
-                    const intern = internsList.find(i => i.id === internId);
+                    const intern = internsList.find(i => (i.id || i._id) === internId);
                     return (
                       <span key={internId} className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 text-[11px] px-2 py-0.5 rounded-md font-medium border border-blue-100">
                         {intern ? (intern.fullName || intern.name) : internId}

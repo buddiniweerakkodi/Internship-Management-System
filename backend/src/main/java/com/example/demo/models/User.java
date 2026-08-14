@@ -13,6 +13,7 @@ public class User {
     private String role;
     private boolean active = true;
     private String assignedProjectId;
+    private String avatar;
 
     public User() {}
 
@@ -37,4 +38,7 @@ public class User {
 
     public String getAssignedProjectId() { return assignedProjectId; }
     public void setAssignedProjectId(String assignedProjectId) { this.assignedProjectId = assignedProjectId; }
+
+    public String getAvatar() { return avatar; }
+    public void setAvatar(String avatar) { this.avatar = avatar; }
 }

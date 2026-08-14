@@ -1,5 +1,8 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import AdminDashboard from './pages/AdminDashboard';
@@ -12,10 +15,14 @@ import ProtectedRoute from './components/ProtectedRoute';
 import MyTasks from './pages/MyTasks';
 import DailyWorkLogs from './pages/DailyWorkLogs';
 import MySubmissions from './pages/MySubmissions';
+import ProjectDetails from './pages/ProjectDetails'; 
 
 function App() {
   return (
     <Router>
+      {/* Toast Notifications Provider globally available */}
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop closeOnClick pauseOnHover />
+      
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<LandingPage />} />
@@ -59,6 +66,11 @@ function App() {
         <Route 
           path="/intern-submissions" 
           element={<ProtectedRoute allowedRole="intern"><MySubmissions /></ProtectedRoute>} 
+        />
+        
+        <Route 
+          path="/intern-project" 
+          element={<ProtectedRoute allowedRole="intern"><ProjectDetails /></ProtectedRoute>} 
         />
 
         {/* Default Fallback */}

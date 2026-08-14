@@ -49,13 +49,15 @@ public class InternController {
         intern.setPassword(passwordEncoder.encode(payload.get("password")));
         intern.setRole("INTERN");
         intern.setActive(true);
-        intern.setAssignedProjectId(payload.get("projectId"));
+        
+        String projId = payload.get("projectId") != null ? payload.get("projectId") : payload.get("assignedProjectId");
+        intern.setAssignedProjectId(projId);
 
         userRepository.save(intern);
         return ResponseEntity.ok(intern);
     }
 
-    // 3. Update existing intern
+    // 3. Update existing intern profile 
     @PutMapping("/{id}")
     public ResponseEntity<?> updateIntern(@PathVariable String id, @RequestBody Map<String, String> payload) {
         Optional<User> optionalUser = userRepository.findById(id);
@@ -64,12 +66,33 @@ public class InternController {
         }
 
         User intern = optionalUser.get();
-        intern.setFullName(payload.get("fullName"));
-        intern.setEmail(payload.get("email"));
-        if (payload.get("password") != null && !payload.get("password").trim().isEmpty()) {
+
+        // Full Name update
+        if (payload.containsKey("fullName") && payload.get("fullName") != null) {
+            intern.setFullName(payload.get("fullName"));
+        }
+
+        // Email update
+        if (payload.containsKey("email") && payload.get("email") != null) {
+            intern.setEmail(payload.get("email"));
+        }
+
+        // Avatar update
+        if (payload.containsKey("avatar") && payload.get("avatar") != null) {
+            intern.setAvatar(payload.get("avatar"));
+        }
+
+        // Password update
+        if (payload.containsKey("password") && payload.get("password") != null && !payload.get("password").trim().isEmpty()) {
             intern.setPassword(passwordEncoder.encode(payload.get("password")));
         }
-        intern.setAssignedProjectId(payload.get("projectId"));
+
+        // Assigned Project ID Update
+        if (payload.containsKey("projectId")) {
+            intern.setAssignedProjectId(payload.get("projectId"));
+        } else if (payload.containsKey("assignedProjectId")) {
+            intern.setAssignedProjectId(payload.get("assignedProjectId"));
+        }
 
         userRepository.save(intern);
         return ResponseEntity.ok(intern);

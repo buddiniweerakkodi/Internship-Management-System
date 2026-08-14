@@ -56,7 +56,6 @@ const SubmissionsAndLogs = () => {
     fetchData();
   }, []);
 
-  // Update Submission Status
   const handleUpdateSubmissionStatus = async (status) => {
     if (!selectedSubmission) return;
     const submissionId = selectedSubmission.id || selectedSubmission._id;
@@ -77,7 +76,6 @@ const SubmissionsAndLogs = () => {
     }
   };
 
-  // Update Daily Log Status
   const handleUpdateLogStatus = async (status) => {
     if (!selectedLog) return;
     const logId = selectedLog.id || selectedLog._id;
@@ -114,11 +112,11 @@ const SubmissionsAndLogs = () => {
     });
   };
 
-  // Improved Filter Logic
   const filteredSubmissions = submissions.filter(sub => {
+    const internName = sub.intern?.fullName || sub.internName || '';
     const matchesSearch = 
       (sub.taskTitle || sub.task?.title || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
-      (sub.intern?.fullName || '').toLowerCase().includes(searchTerm.toLowerCase());
+      internName.toLowerCase().includes(searchTerm.toLowerCase());
 
     const subStatus = (sub.status || '').toLowerCase();
     const filterStatus = selectedStatus.toLowerCase();
@@ -136,7 +134,8 @@ const SubmissionsAndLogs = () => {
   });
 
   const filteredLogs = dailyLogs.filter(log => {
-    const matchesSearch = (log.intern?.fullName || '').toLowerCase().includes(searchTerm.toLowerCase());
+    const internName = log.intern?.fullName || log.internName || '';
+    const matchesSearch = internName.toLowerCase().includes(searchTerm.toLowerCase());
     const logStatus = (log.status || '').toLowerCase();
     const filterStatus = selectedStatus.toLowerCase();
 
@@ -255,16 +254,16 @@ const SubmissionsAndLogs = () => {
                           ) : filteredSubmissions.map((sub) => (
                             <tr key={sub.id || sub._id} className="hover:bg-slate-50/50 transition-colors">
                               <td className="py-3 px-4 flex items-center space-x-3">
-                                <img src={sub.intern?.avatar || "https://ui-avatars.com/api/?name=" + (sub.intern?.fullName || 'Intern')} alt="avatar" className="w-8 h-8 rounded-full object-cover" />
+                                <img src={sub.intern?.avatar || "https://ui-avatars.com/api/?name=" + (sub.intern?.fullName || sub.internName || 'Intern')} alt="avatar" className="w-8 h-8 rounded-full object-cover" />
                                 <div>
-                                  <p className="font-medium text-slate-800 text-xs">{sub.intern?.fullName || 'Unknown Intern'}</p>
+                                  <p className="font-medium text-slate-800 text-xs">{sub.intern?.fullName || sub.internName || 'Kasun Perera'}</p>
                                   <p className="text-[10px] text-slate-400">{sub.intern?.role || 'Intern'}</p>
                                 </div>
                               </td>
                               <td className="py-3 px-4">
                                 <p className="font-medium text-slate-800 text-xs truncate max-w-[150px]">{sub.taskTitle || sub.task?.title}</p>
                                 <span className="text-[10px] bg-blue-50 text-blue-600 font-medium px-2 py-0.5 rounded truncate max-w-[150px] inline-block">
-                                  {sub.project?.name || 'Project Name'}
+                                  {sub.project?.name || 'Internship Project'}
                                 </span>
                               </td>
                               <td className="py-3 px-4">
@@ -327,9 +326,9 @@ const SubmissionsAndLogs = () => {
                             <tr key={log.id || log._id} className="hover:bg-slate-50/50 transition-colors">
                               <td className="py-3 px-4">
                                 <div className="flex items-center space-x-2.5">
-                                  <img src={log.intern?.avatar || "https://ui-avatars.com/api/?name=" + (log.intern?.fullName || 'Intern')} alt="avatar" className="w-7 h-7 rounded-full object-cover" />
+                                  <img src={log.intern?.avatar || "https://ui-avatars.com/api/?name=" + (log.intern?.fullName || log.internName || 'Intern')} alt="avatar" className="w-7 h-7 rounded-full object-cover" />
                                   <div>
-                                    <p className="font-medium text-slate-800">{log.intern?.fullName || 'Unknown Intern'}</p>
+                                    <p className="font-medium text-slate-800">{log.intern?.fullName || log.internName || 'Kasun Perera'}</p>
                                     <p className="text-[10px] text-slate-400">{formatDate(log.date || log.createdAt)}</p>
                                   </div>
                                 </div>
@@ -383,10 +382,10 @@ const SubmissionsAndLogs = () => {
               </div>
 
               <div className="flex items-start space-x-3 bg-slate-50 p-3 rounded-lg mb-5 border border-slate-100">
-                <img src={selectedSubmission.intern?.avatar || "https://ui-avatars.com/api/?name=" + (selectedSubmission.intern?.fullName || 'Intern')} alt="intern" className="w-10 h-10 rounded-full object-cover" />
+                <img src={selectedSubmission.intern?.avatar || "https://ui-avatars.com/api/?name=" + (selectedSubmission.intern?.fullName || selectedSubmission.internName || 'Intern')} alt="intern" className="w-10 h-10 rounded-full object-cover" />
                 <div className="flex-1 text-xs space-y-1">
                   <div className="flex justify-between items-center">
-                    <p className="font-semibold text-slate-800 text-sm">{selectedSubmission.intern?.fullName || "Unknown Intern"}</p>
+                    <p className="font-semibold text-slate-800 text-sm">{selectedSubmission.intern?.fullName || selectedSubmission.internName || "Kasun Perera"}</p>
                     <span className="text-slate-400">{selectedSubmission.intern?.role || "Intern"}</span>
                   </div>
                   <div className="grid grid-cols-3 gap-1 text-slate-600 pt-1">
@@ -480,9 +479,9 @@ const SubmissionsAndLogs = () => {
               </div>
 
               <div className="flex items-center space-x-3 bg-slate-50 p-3 rounded-lg mb-5 border border-slate-100">
-                <img src={selectedLog.intern?.avatar || "https://ui-avatars.com/api/?name=" + (selectedLog.intern?.fullName || 'Intern')} alt="intern" className="w-10 h-10 rounded-full object-cover" />
+                <img src={selectedLog.intern?.avatar || "https://ui-avatars.com/api/?name=" + (selectedLog.intern?.fullName || selectedLog.internName || 'Intern')} alt="intern" className="w-10 h-10 rounded-full object-cover" />
                 <div className="flex-1 text-xs">
-                  <p className="font-semibold text-slate-800 text-sm">{selectedLog.intern?.fullName || "Unknown Intern"}</p>
+                  <p className="font-semibold text-slate-800 text-sm">{selectedLog.intern?.fullName || selectedLog.internName || "Kasun Perera"}</p>
                   <p className="text-slate-400">{selectedLog.intern?.role || "Intern"}</p>
                   <div className="flex items-center space-x-3 text-slate-500 mt-1">
                     <span className="flex items-center space-x-1"><Calendar className="w-3 h-3" /> <span>{formatDate(selectedLog.date || selectedLog.createdAt)}</span></span>

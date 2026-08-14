@@ -11,4 +11,6 @@ import com.example.demo.models.Project;
 public interface ProjectRepository extends MongoRepository<Project, String> {
     long countByStatus(String status);
     List<Project> findByStatus(String status);
+    
+    List<Project> findByAssignedInternsContaining(String internId);
 }

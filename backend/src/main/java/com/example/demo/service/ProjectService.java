@@ -18,9 +18,13 @@ public class ProjectService {
         return projectRepository.findAll();
     }
 
+    public List<Project> getProjectsByInternId(String internId) {
+        return projectRepository.findByAssignedInternsContaining(internId);
+    }
+
     public Project createProject(Project project) {
         if (project.getStatus() == null || project.getStatus().isEmpty()) {
-            project.setStatus("In Progress");
+            project.setStatus("IN_PROGRESS");
         }
         if (project.getProgress() == null) {
             project.setProgress(0);

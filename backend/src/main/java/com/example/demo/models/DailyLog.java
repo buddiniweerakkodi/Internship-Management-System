@@ -19,6 +19,7 @@ public class DailyLog {
     private List<String> challenges;
     private List<String> nextDayPlan;
     private String status; 
+    private String feedback; 
 
     // Getters and Setters
     public String getId() { return id; }
@@ -44,4 +45,7 @@ public class DailyLog {
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    public String getFeedback() { return feedback; }
+    public void setFeedback(String feedback) { this.feedback = feedback; }
 }

@@ -30,6 +30,12 @@ public class ProjectController {
         return projectService.getAllProjects();
     }
 
+    @GetMapping("/intern/{internId}")
+    public ResponseEntity<List<Project>> getProjectsByIntern(@PathVariable String internId) {
+        List<Project> projects = projectService.getProjectsByInternId(internId);
+        return ResponseEntity.ok(projects);
+    }
+
     @PostMapping
     public ResponseEntity<Project> createProject(@RequestBody Project project) {
         Project createdProject = projectService.createProject(project);

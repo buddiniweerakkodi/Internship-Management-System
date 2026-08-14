@@ -123,11 +123,6 @@ const InternManagement = () => {
               />
             </div>
 
-            <button className="relative p-2.5 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-sm text-slate-600">
-              <Bell className="w-4 h-4" />
-              <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full animate-pulse"></span>
-            </button>
-
             <div className="flex items-center gap-3 pl-2 border-l border-slate-200">
               <div className="w-9 h-9 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 font-bold text-sm">
                 AU
@@ -187,7 +182,11 @@ const InternManagement = () => {
               </thead>
               <tbody className="divide-y divide-slate-100 text-sm">
                 {filteredInterns.map((intern) => {
-                  const assignedProj = projects.find(p => p.id === intern.assignedProjectId);
+                  const assignedProj = projects.find(p => 
+                    (intern.assignedProjectId && (p.id === intern.assignedProjectId || p._id === intern.assignedProjectId)) ||
+                    (p.assignedInterns && p.assignedInterns.some(i => (typeof i === 'object' ? (i.id === intern.id || i._id === intern.id) : i === intern.id)))
+                  );
+
                   return (
                     <tr key={intern.id} className="hover:bg-slate-50/80 transition-colors">
                       <td className="py-4 px-6 font-medium text-slate-800 flex items-center gap-3">
@@ -198,7 +197,7 @@ const InternManagement = () => {
                       </td>
                       <td className="py-4 px-6 text-slate-500">{intern.email}</td>
                       <td className="py-4 px-6 text-slate-600 font-medium">
-                        {assignedProj ? assignedProj.name : 'Unassigned'}
+                        {assignedProj ? (assignedProj.title || assignedProj.name) : 'Unassigned'}
                       </td>
                       <td className="py-4 px-6">
                         <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${
@@ -319,7 +318,9 @@ const InternManagement = () => {
                   >
                     <option value="">Select a project</option>
                     {projects.map((p) => (
-                      <option key={p.id} value={p.id}>{p.name}</option>
+                      <option key={p.id || p._id} value={p.id || p._id}>
+                        {p.title || p.name}
+                      </option>
                     ))}
                   </select>
                 </div>

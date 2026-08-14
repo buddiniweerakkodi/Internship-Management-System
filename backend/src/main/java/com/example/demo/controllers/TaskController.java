@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -20,6 +21,7 @@ import com.example.demo.repositories.TaskRepository;
 
 @RestController
 @RequestMapping("/api/v1/tasks")
+@CrossOrigin(origins = "http://localhost:3000") 
 public class TaskController {
 
     @Autowired
@@ -38,13 +40,14 @@ public class TaskController {
     @PutMapping("/{id}")
     public ResponseEntity<Task> updateTask(@PathVariable String id, @RequestBody Task taskDetails) {
         return taskRepository.findById(id).map(task -> {
-            task.setTitle(taskDetails.getTitle());
-            task.setDescription(taskDetails.getDescription()); 
-            task.setStatus(taskDetails.getStatus());
-            task.setPriority(taskDetails.getPriority()); 
-            task.setProjectId(taskDetails.getProjectId());
-            task.setAssigneeId(taskDetails.getAssigneeId()); 
-            task.setDeadline(taskDetails.getDeadline());
+            if (taskDetails.getTitle() != null) task.setTitle(taskDetails.getTitle());
+            if (taskDetails.getDescription() != null) task.setDescription(taskDetails.getDescription()); 
+            if (taskDetails.getStatus() != null) task.setStatus(taskDetails.getStatus());
+            if (taskDetails.getPriority() != null) task.setPriority(taskDetails.getPriority()); 
+            if (taskDetails.getProjectId() != null) task.setProjectId(taskDetails.getProjectId());
+            if (taskDetails.getAssigneeId() != null) task.setAssigneeId(taskDetails.getAssigneeId()); 
+            if (taskDetails.getDeadline() != null) task.setDeadline(taskDetails.getDeadline());
+
             return ResponseEntity.ok(taskRepository.save(task));
         }).orElse(ResponseEntity.notFound().build());
     }
@@ -52,7 +55,9 @@ public class TaskController {
     @PatchMapping("/{id}/status")
     public ResponseEntity<Task> updateTaskStatus(@PathVariable String id, @RequestBody Map<String, String> statusUpdate) {
         return taskRepository.findById(id).map(task -> {
-            task.setStatus(statusUpdate.get("status"));
+            if (statusUpdate.containsKey("status")) {
+                task.setStatus(statusUpdate.get("status"));
+            }
             return ResponseEntity.ok(taskRepository.save(task));
         }).orElse(ResponseEntity.notFound().build());
     }

@@ -11,22 +11,18 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080
 const TaskManagement = () => {
   const navigate = useNavigate();
   
-  // States
   const [tasks, setTasks] = useState([]);
   const [interns, setInterns] = useState([]);
   const [projects, setProjects] = useState([]);
   
-  // Filters
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedProject, setSelectedProject] = useState('ALL');
   const [selectedAssignee, setSelectedAssignee] = useState('ALL');
   const [selectedPriority, setSelectedPriority] = useState('ALL');
 
-  // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
 
-  // Form State
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -37,7 +33,6 @@ const TaskManagement = () => {
     assigneeId: ''
   });
 
-  // Dynamic Auth Headers Helper
   const getAuthHeaders = () => {
     const token = localStorage.getItem('token');
     return {
@@ -47,7 +42,6 @@ const TaskManagement = () => {
     };
   };
 
-  // Helper to format ISO/date string to YYYY-MM-DD for HTML date inputs
   const formatDateForInput = (dateString) => {
     if (!dateString) return '';
     try {
@@ -58,19 +52,23 @@ const TaskManagement = () => {
     }
   };
 
-  // Error Handler 
   const handleApiError = (err) => {
     console.error("API Error Response:", err.response || err);
     if (err.response && err.response.status === 401) {
-      console.warn("Unauthorized. Redirecting to login...");
       localStorage.clear();
       navigate('/login');
-    } else if (err.response && err.response.status === 403) {
-      console.error("Access Forbidden (403): Check Spring Security configurations or JWT token validity.");
     }
   };
 
-  // Initial Data Fetch
+  // Helper function to safely extract arrays
+  const extractArray = (res) => {
+    if (!res || !res.data) return [];
+    if (Array.isArray(res.data)) return res.data;
+    if (res.data.content && Array.isArray(res.data.content)) return res.data.content;
+    if (res.data.data && Array.isArray(res.data.data)) return res.data.data;
+    return [];
+  };
+
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token || token === 'undefined' || token === 'null') {
@@ -85,10 +83,11 @@ const TaskManagement = () => {
   const fetchTasks = async () => {
     try {
       const res = await axios.get(`${API_BASE_URL}/api/v1/tasks`, getAuthHeaders());
+      const dataArr = extractArray(res);
       
-      const normalizedTasks = (res.data || []).map(task => ({
+      const normalizedTasks = dataArr.map(task => ({
         ...task,
-        dueDate: task.dueDate || task.deadline || '',
+        dueDate: task.deadline || task.dueDate || '',
         status: task.status ? task.status.trim() : 'TO_DO'
       }));
 
@@ -101,7 +100,7 @@ const TaskManagement = () => {
   const fetchInterns = async () => {
     try {
       const res = await axios.get(`${API_BASE_URL}/api/v1/interns`, getAuthHeaders());
-      setInterns(res.data || []);
+      setInterns(extractArray(res));
     } catch (err) {
       console.warn("Could not fetch interns:", err.message);
     }
@@ -110,24 +109,94 @@ const TaskManagement = () => {
   const fetchProjects = async () => {
     try {
       const res = await axios.get(`${API_BASE_URL}/api/v1/projects`, getAuthHeaders());
-      setProjects(res.data || []);
+      setProjects(extractArray(res));
     } catch (err) {
       console.warn("Could not fetch projects:", err.message);
     }
   };
 
-  // Open Modal for Create / Edit
+  const getInternDisplayName = (i) => {
+    if (!i) return 'Unassigned';
+    return i.fullName || i.name || `${i.firstName || ''} ${i.lastName || ''}`.trim() || i.user?.fullName || 'Intern';
+  };
+
+  const getProjectDisplayName = (p) => {
+    if (!p) return 'Project';
+    return p.name || p.title || p.projectName || 'Project';
+  };
+
+  const getTaskTitle = (task) => {
+    if (!task) return 'Untitled Task';
+    return task.title || task.taskTitle || task.taskName || task.name || 'Untitled Task';
+  };
+
+  const getTaskInternName = (task) => {
+    if (!task) return 'Unassigned';
+
+    if (typeof task.assignee === 'object' && task.assignee !== null) {
+      const name = task.assignee.fullName || task.assignee.name || `${task.assignee.firstName || ''} ${task.assignee.lastName || ''}`.trim();
+      if (name) return name;
+    }
+    if (typeof task.intern === 'object' && task.intern !== null) {
+      const name = task.intern.fullName || task.intern.name || `${task.intern.firstName || ''} ${task.intern.lastName || ''}`.trim();
+      if (name) return name;
+    }
+
+    if (task.assignedInternName) return task.assignedInternName;
+    if (task.internName) return task.internName;
+    if (task.assigneeName) return task.assigneeName;
+
+    const assigneeId = task.assigneeId || task.internId || task.userId || 
+      (typeof task.assignee === 'object' ? (task.assignee?.id || task.assignee?._id) : (typeof task.assignee !== 'object' ? task.assignee : null)) ||
+      (typeof task.intern === 'object' ? (task.intern?.id || task.intern?._id) : (typeof task.intern !== 'object' ? task.intern : null));
+
+    if (assigneeId && interns.length > 0) {
+      const found = interns.find(i => String(i.id || i._id || i.userId || i.internId) === String(assigneeId));
+      if (found) return getInternDisplayName(found);
+    }
+
+    return 'Unassigned';
+  };
+
+  const getTaskProjectName = (task) => {
+    if (!task) return 'Unassigned Project';
+
+    if (typeof task.project === 'object' && task.project !== null) {
+      const pName = task.project.name || task.project.title || task.project.projectName;
+      if (pName) return pName;
+    }
+
+    if (task.projectName) return task.projectName;
+    if (task.projectTitle) return task.projectTitle;
+
+    const projId = task.projectId || (typeof task.project === 'object' ? (task.project?.id || task.project?._id) : task.project);
+    if (projId && projects.length > 0) {
+      const found = projects.find(p => String(p.id || p._id || p.projectId) === String(projId));
+      if (found) return getProjectDisplayName(found);
+    }
+
+    return 'Unassigned Project';
+  };
+
+  const isStatusMatch = (taskStatus, columnKey) => {
+    if (!taskStatus || !columnKey) return false;
+    const normTask = String(taskStatus).toUpperCase().replace(/[\s_]/g, '');
+    const normCol = String(columnKey).toUpperCase().replace(/[\s_]/g, '');
+    if (normCol === 'TODO' && (normTask === 'TODO' || normTask === '2DO')) return true;
+    return normTask === normCol;
+  };
+
   const handleOpenModal = (task = null, defaultStatus = 'TO_DO') => {
     if (task) {
       setEditingTask(task);
       setFormData({
-        title: task.title || '',
+        title: getTaskTitle(task) !== 'Untitled Task' ? getTaskTitle(task) : '',
         description: task.description || '',
         status: task.status || 'TO_DO',
         priority: task.priority || 'MEDIUM',
-        dueDate: formatDateForInput(task.dueDate || task.deadline),
-        projectId: task.projectId || task.project?.id || task.project || '',
-        assigneeId: task.assigneeId || task.assignee?.id || task.assignee || ''
+        dueDate: formatDateForInput(task.deadline || task.dueDate),
+        projectId: task.projectId || (typeof task.project === 'object' ? (task.project?.id || task.project?._id) : task.project) || '',
+        assigneeId: task.assigneeId || (typeof task.assignee === 'object' ? (task.assignee?.id || task.assignee?._id) : task.assignee) || ''
       });
     } else {
       setEditingTask(null);
@@ -137,20 +206,24 @@ const TaskManagement = () => {
         status: defaultStatus,
         priority: 'MEDIUM',
         dueDate: '',
-        projectId: projects[0]?.id || projects[0]?._id || '',
-        assigneeId: interns[0]?.id || interns[0]?._id || ''
+        projectId: projects.length > 0 ? (projects[0].id || projects[0]._id || '') : '',
+        assigneeId: interns.length > 0 ? (interns[0].id || interns[0]._id || '') : ''
       });
     }
     setIsModalOpen(true);
   };
 
-  // Submit Handler (Create or Edit)
   const handleSubmit = async (e) => {
     e.preventDefault();
     
     const payload = {
-      ...formData,
-      deadline: formData.dueDate
+      title: formData.title,
+      description: formData.description,
+      status: formData.status,
+      priority: formData.priority,
+      projectId: formData.projectId,
+      assigneeId: formData.assigneeId,
+      deadline: formData.dueDate ? formData.dueDate : null
     };
 
     try {
@@ -167,7 +240,6 @@ const TaskManagement = () => {
     }
   };
 
-  // Quick Status Update
   const handleStatusChange = async (taskId, newStatus) => {
     try {
       await axios.patch(`${API_BASE_URL}/api/v1/tasks/${taskId}/status`, { status: newStatus }, getAuthHeaders());
@@ -178,7 +250,7 @@ const TaskManagement = () => {
         const payload = {
           ...existingTask,
           status: newStatus,
-          deadline: existingTask?.dueDate || existingTask?.deadline
+          deadline: existingTask?.deadline || existingTask?.dueDate
         };
         await axios.put(`${API_BASE_URL}/api/v1/tasks/${taskId}`, payload, getAuthHeaders());
         fetchTasks();
@@ -188,7 +260,6 @@ const TaskManagement = () => {
     }
   };
 
-  // Delete Task
   const handleDeleteTask = async (taskId) => {
     if (window.confirm("Are you sure you want to delete this task?")) {
       try {
@@ -200,24 +271,23 @@ const TaskManagement = () => {
     }
   };
 
-  // Filter Tasks
   const filteredTasks = tasks.filter(task => {
-    const titleMatch = task.title ? task.title.toLowerCase().includes(searchTerm.toLowerCase()) : false;
+    const taskTitle = getTaskTitle(task);
+    const titleMatch = taskTitle.toLowerCase().includes(searchTerm.toLowerCase());
     const descMatch = task.description ? task.description.toLowerCase().includes(searchTerm.toLowerCase()) : false;
     const matchesSearch = searchTerm === '' || titleMatch || descMatch;
     
-    const taskProjId = String(task.projectId || task.project?.id || task.project || '');
+    const taskProjId = String(task.projectId || (typeof task.project === 'object' ? (task.project?.id || task.project?._id) : task.project) || '');
     const matchesProject = selectedProject === 'ALL' ? true : taskProjId === String(selectedProject);
     
-    const taskAssigneeId = String(task.assigneeId || task.assignee?.id || task.assignee || '');
+    const taskAssigneeId = String(task.assigneeId || (typeof task.assignee === 'object' ? (task.assignee?.id || task.assignee?._id) : task.assignee) || '');
     const matchesAssignee = selectedAssignee === 'ALL' ? true : taskAssigneeId === String(selectedAssignee);
     
-    const matchesPriority = selectedPriority === 'ALL' ? true : task.priority === selectedPriority;
+    const matchesPriority = selectedPriority === 'ALL' ? true : (task.priority || 'MEDIUM').toUpperCase() === selectedPriority.toUpperCase();
 
     return matchesSearch && matchesProject && matchesAssignee && matchesPriority;
   });
 
-  // Kanban Columns Definition
   const columns = [
     { key: 'TO_DO', title: 'To Do', color: 'bg-slate-400', textColor: 'text-slate-600' },
     { key: 'IN_PROGRESS', title: 'In Progress', color: 'bg-blue-500', textColor: 'text-blue-600' },
@@ -230,7 +300,6 @@ const TaskManagement = () => {
     <div className="flex h-screen bg-slate-50 font-sans overflow-hidden">
       <Sidebar role="admin" activePage="tasks" />
 
-      {/* Main Content Area - Fully Independent Scroll */}
       <main className="flex-1 p-8 overflow-y-auto overflow-x-auto h-screen">
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -249,11 +318,6 @@ const TaskManagement = () => {
               />
             </div>
 
-            <button className="relative p-2.5 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-sm text-slate-600">
-              <Bell className="w-4 h-4" />
-              <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full animate-pulse"></span>
-            </button>
-
             <div className="flex items-center gap-3 pl-2 border-l border-slate-200">
               <div className="w-9 h-9 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 font-bold text-sm">
                 AU
@@ -266,7 +330,6 @@ const TaskManagement = () => {
           </div>
         </div>
 
-        {/* Filters and New Task Button */}
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
           <div className="flex flex-wrap items-center gap-3 flex-1">
             <div className="relative min-w-[240px]">
@@ -287,7 +350,7 @@ const TaskManagement = () => {
             >
               <option value="ALL">All Projects</option>
               {projects.map(p => (
-                <option key={p.id || p._id} value={p.id || p._id}>{p.name}</option>
+                <option key={p.id || p._id} value={p.id || p._id}>{getProjectDisplayName(p)}</option>
               ))}
             </select>
 
@@ -298,7 +361,7 @@ const TaskManagement = () => {
             >
               <option value="ALL">All Assignees</option>
               {interns.map(i => (
-                <option key={i.id || i._id} value={i.id || i._id}>{i.fullName}</option>
+                <option key={i.id || i._id} value={i.id || i._id}>{getInternDisplayName(i)}</option>
               ))}
             </select>
 
@@ -322,10 +385,9 @@ const TaskManagement = () => {
           </button>
         </div>
 
-        {/* Kanban Board Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 min-w-[1000px]">
           {columns.map((col) => {
-            const columnTasks = filteredTasks.filter(t => t.status === col.key);
+            const columnTasks = filteredTasks.filter(t => isStatusMatch(t.status, col.key));
 
             return (
               <div key={col.key} className="bg-slate-100/70 p-3 rounded-2xl flex flex-col min-h-[500px]">
@@ -345,17 +407,17 @@ const TaskManagement = () => {
                 <div className="flex-1 space-y-3 overflow-y-auto max-h-[650px] pr-1">
                   {columnTasks.map((task) => {
                     const taskId = task.id || task._id;
-                    const assignedIntern = interns.find(i => String(i.id || i._id) === String(task.assigneeId || task.assignee?.id || task.assignee));
-                    const assignedProj = projects.find(p => String(p.id || p._id) === String(task.projectId || task.project?.id || task.project));
+                    const taskTitle = getTaskTitle(task);
+                    const internName = getTaskInternName(task);
+                    const projectName = getTaskProjectName(task);
 
-                    // Date String Formatting
-                    const rawDate = task.dueDate || task.deadline;
+                    const rawDate = task.deadline || task.dueDate;
                     const formattedDate = rawDate ? new Date(rawDate).toLocaleDateString() : 'No Due Date';
 
                     return (
                       <div key={taskId} className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm hover:shadow-md transition-all group relative">
                         <div className="flex items-start justify-between gap-2 mb-2">
-                          <h4 className="font-semibold text-slate-800 text-sm leading-snug">{task.title}</h4>
+                          <h4 className="font-semibold text-slate-800 text-sm leading-snug">{taskTitle}</h4>
                           <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
                             <button onClick={() => handleOpenModal(task)} className="p-1 hover:text-blue-600 text-slate-400">
                               <Edit2 className="w-3.5 h-3.5" />
@@ -371,25 +433,23 @@ const TaskManagement = () => {
                         )}
 
                         <div className="flex items-center gap-2 mb-3 flex-wrap">
-                          <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
+                          <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase ${
                             task.priority === 'HIGH' ? 'bg-rose-100 text-rose-600' :
-                            task.priority === 'MEDIUM' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600'
+                            task.priority === 'LOW' ? 'bg-slate-100 text-slate-600' : 'bg-amber-100 text-amber-700'
                           }`}>
                             {task.priority || 'MEDIUM'}
                           </span>
 
-                          {assignedProj && (
-                            <span className="px-2 py-0.5 bg-blue-50 text-blue-600 rounded-md text-[10px] font-medium truncate max-w-[120px]">
-                              {assignedProj.name}
-                            </span>
-                          )}
+                          <span className="px-2 py-0.5 bg-blue-50 text-blue-600 rounded-md text-[10px] font-medium truncate max-w-[140px]">
+                            {projectName}
+                          </span>
                         </div>
 
                         <div className="mb-3">
                           <select
-                            value={task.status}
+                            value={col.key}
                             onChange={(e) => handleStatusChange(taskId, e.target.value)}
-                            className="w-full text-xs bg-slate-50 border border-slate-200 rounded-lg py-1 px-2 text-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer"
+                            className="w-full text-xs bg-slate-50 border border-slate-200 rounded-lg py-1 px-2 text-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer font-medium"
                           >
                             {columns.map(c => (
                               <option key={c.key} value={c.key}>Move to: {c.title}</option>
@@ -403,29 +463,24 @@ const TaskManagement = () => {
                             <span className="text-[11px]">{formattedDate}</span>
                           </div>
 
-                          {assignedIntern && (
-                            <div className="w-6 h-6 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center text-[10px]" title={assignedIntern.fullName}>
-                              {assignedIntern.fullName ? assignedIntern.fullName.substring(0, 2).toUpperCase() : 'IN'}
-                            </div>
-                          )}
+                          <div className="flex items-center gap-1.5 font-medium text-slate-700">
+                            <img 
+                              src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${internName}`} 
+                              alt={internName} 
+                              className="w-5 h-5 rounded-full bg-slate-100" 
+                            />
+                            <span className="text-[11px] font-semibold text-slate-600 truncate max-w-[90px]">{internName}</span>
+                          </div>
                         </div>
                       </div>
                     );
                   })}
                 </div>
-
-                <button
-                  onClick={() => handleOpenModal(null, col.key)}
-                  className="mt-3 w-full py-2 border border-dashed border-slate-300 rounded-xl text-slate-500 text-xs font-medium hover:bg-slate-200/50 hover:border-slate-400 transition-all flex items-center justify-center gap-1"
-                >
-                  <Plus className="w-3.5 h-3.5" /> Add Task
-                </button>
               </div>
             );
           })}
         </div>
 
-        {/* Create / Edit Modal */}
         {isModalOpen && (
           <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl border border-slate-100 overflow-hidden">
@@ -500,7 +555,7 @@ const TaskManagement = () => {
                     >
                       <option value="">Select Project</option>
                       {projects.map(p => (
-                        <option key={p.id || p._id} value={p.id || p._id}>{p.name}</option>
+                        <option key={p.id || p._id} value={p.id || p._id}>{getProjectDisplayName(p)}</option>
                       ))}
                     </select>
                   </div>
@@ -514,7 +569,7 @@ const TaskManagement = () => {
                     >
                       <option value="">Select Intern</option>
                       {interns.map(i => (
-                        <option key={i.id || i._id} value={i.id || i._id}>{i.fullName}</option>
+                        <option key={i.id || i._id} value={i.id || i._id}>{getInternDisplayName(i)}</option>
                       ))}
                     </select>
                   </div>

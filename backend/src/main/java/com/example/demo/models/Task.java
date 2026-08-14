@@ -1,5 +1,7 @@
 package com.example.demo.models;
 
+import java.time.LocalDate;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -14,7 +16,7 @@ public class Task {
     private String projectId;
     private String assigneeId;
     
-    private String deadline;
+    private LocalDate deadline;
 
     // Getters and Setters
     public String getId() { return id; }
@@ -38,6 +40,6 @@ public class Task {
     public String getAssigneeId() { return assigneeId; }
     public void setAssigneeId(String assigneeId) { this.assigneeId = assigneeId; }
 
-    public String getDeadline() { return deadline; }
-    public void setDeadline(String deadline) { this.deadline = deadline; }
+    public LocalDate getDeadline() { return deadline; }
+    public void setDeadline(LocalDate deadline) { this.deadline = deadline; }
 }
